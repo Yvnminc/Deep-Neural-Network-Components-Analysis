@@ -67,6 +67,7 @@ class HiddenLayer:
         '''
         :type input: numpy.array
         :param input: a symbolic tensor of shape (n_in,)
+        :mode: a string indicating if we are currently training, to indicate we are training , input "train"
         '''
         
         lin_output = np.dot(input, self.W) + self.b
