@@ -1,7 +1,8 @@
 """
 File name: data.py
 Authors: Yanming Guo
-Description: Load data from dataset in npy format
+Description: Deal with the input data in npy format,
+             also with some processing method.
 """
 
 import numpy as np
