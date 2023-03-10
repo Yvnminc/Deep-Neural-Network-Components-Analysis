@@ -6,6 +6,7 @@ Reference: Week 2 tut sheet of COMP5329 Deep Learning,
            University of Sydney
 """
 import numpy as np
+from .Dropout import Dropout
 from .Activation import Activation
 
 class HiddenLayer:
