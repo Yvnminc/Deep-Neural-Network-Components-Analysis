@@ -17,7 +17,7 @@ class Mlp:
     """ 
 
     # for initiallization, the code will create all layers automatically based on the provided parameters.     
-    def __init__(self, layers, activation, loss = "MSE"):
+    def __init__(self, layers, activation, loss = "CE"):
         """
         :param layers: A list containing the number of units in each layer.
         Should be at least two values
