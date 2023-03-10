@@ -4,7 +4,7 @@ class Dropout:
     """
     Description: The Dropout class allows performing regularization on the activation result through droping some nodes in a layer during training.
     
-    Paramters:
+    Attribute:
     - keep_prob: the probability of a node not being dropped
     
     Method:
