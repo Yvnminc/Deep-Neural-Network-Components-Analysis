@@ -25,21 +25,12 @@ class Activation:
         return  a * (1 - a )
     
     # Relu activation
-    def __relu(self, z):
-        mask = z > 0
-        return z * mask
+    def __relu(self, x):
+        mask = x > 0
+        return x * mask
 
-    def __relu_deriv(self, a, da):
-        deri = np.int64(a>0)
-        return deri * da
-
-    # Sigmoid activation
-    def __sigmoid(self, z):
-        return 1.0 / (1.0 + np.exp(-z))
-
-    def __sigmoid_deriv(self, a, da):
-        deri = a * (1 - a)
-        return deri * da
+    def __relu_deriv(self, a):
+        return np.int64(a > 0)
     
     def __init__(self,activation='tanh'):
         if activation == 'logistic':
@@ -53,7 +44,3 @@ class Activation:
         elif activation == 'relu':
             self.f = self.__relu
             self.f_deriv = self.__relu_deriv
-        
-        elif activation == 'sigmoid':
-            self.f = self.__sigmoid
-            self.f_deriv = self.__sigmoid_deriv
