@@ -8,6 +8,8 @@ Reference: Week 2 tut sheet of COMP5329 Deep Learning,
 
 from .Activation import Activation
 from .HiddenLayer import HiddenLayer
+from .Loss import Loss
+
 import numpy as np
 
 class Mlp:
@@ -15,7 +17,7 @@ class Mlp:
     """ 
 
     # for initiallization, the code will create all layers automatically based on the provided parameters.     
-    def __init__(self, layers, activation=[None,'tanh','relu']):
+    def __init__(self, layers, activation, loss = "MSE"):
         """
         :param layers: A list containing the number of units in each layer.
         Should be at least two values
@@ -25,8 +27,13 @@ class Mlp:
         ### initialize layers
         self.layers=[]
         self.params=[]
-        
-        self.activation=activation
+        self.loss = loss
+
+        self.activation = activation
+        last_act = self.activation[-1]
+        print(self.activation[-1])
+        self.criterion_loss = Loss(last_act, self.loss).cal_loss
+
         for i in range(len(layers)-1):
             self.layers.append(HiddenLayer(layers[i],layers[i+1],activation[i],activation[i+1]))
 
@@ -52,7 +59,7 @@ class Mlp:
 
     # backward progress  
     def backward(self,delta):
-        delta=self.layers[-1].backward(delta,output_layer=True)
+        delta = self.layers[-1].backward(delta,output_layer=True)
         for layer in reversed(self.layers[:-1]):
             delta=layer.backward(delta)
 
@@ -86,9 +93,12 @@ class Mlp:
                 y_hat = self.forward(X[i])
                 
                 # backward pass
-                loss[it],delta=self.criterion_MSE(y[i],y_hat)
+                # loss[it],delta=self.criterion_MSE(y[i],y_hat)
+
+                loss[it],delta= self.criterion_loss(y[i],y_hat)
+
                 self.backward(delta)
-                y
+                
                 # update
                 self.update(learning_rate)
             to_return[k] = np.mean(loss)

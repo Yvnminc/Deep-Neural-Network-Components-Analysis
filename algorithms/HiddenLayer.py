@@ -22,6 +22,7 @@ class HiddenLayer:
         
         # activation deriv of last layer
         self.activation_deriv=None
+        
         if activation_last_layer:
             self.activation_deriv=Activation(activation_last_layer).f_deriv
 
