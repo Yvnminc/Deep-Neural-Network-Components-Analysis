@@ -110,14 +110,14 @@ class HiddenLayer:
     def backward(self, delta, output_layer=False, regularizer = None):   
            
         # need to check if this is correct, grad_w = dj/dz * dz/dw (input)
-        # is delta dj/dz ?               should grad_w be divided by m (number of instance)
+        # is delta dj/dz ?               should grad_w be divided by m (number of instance)?
         self.grad_W = np.atleast_2d(self.input).T.dot(np.atleast_2d(delta))
              
         # if there is a regularizer, add the deriv of regularization term to grad_W   
         if(regularizer is not None):
             self.grad_W = regularizer.backward(self.grad_W, self.W, self.m)
 
-        
+        # possibly incomplete
         self.grad_b = delta
            
            
