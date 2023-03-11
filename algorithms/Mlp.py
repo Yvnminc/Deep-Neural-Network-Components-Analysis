@@ -10,6 +10,7 @@ from .Activation import Activation
 from .HiddenLayer import HiddenLayer
 from .Loss import Loss
 from .Dropout import Dropout
+from .Optimizers import *
 
 import numpy as np
 
