@@ -22,7 +22,8 @@ class HiddenLayer:
         self.input=None
         self.activation=Activation(activation).f
         self.drop = None
-        self.optimizer = None   
+        self.optimizer = None  
+        self.m = None
         
         # potentially redundent, we probably only need the activation type and check if == "softmax" then final layer, if not then hidden layer
         # take less argument for instantiation. or we could just add a method called add_last_layer to handle the last layer      Leo
@@ -69,13 +70,22 @@ class HiddenLayer:
            
            
     
-    def forward(self, input, mode):
+    def forward(self, input, regularizer = None, mode):
         '''
         :type input: numpy.array
         :param input: a symbolic tensor of shape (n_in,)
         :mode: a string indicating if we are currently training, to indicate we are training , input "train"
         '''
-        
+        # number of instance
+        self.m = input.shape[1]
+
+
+        if regularizer is not None:
+            regularizer.forward(self.W)
+           
+           
+           
+           
         lin_output = np.dot(input, self.W) + self.b
         
         # if self.activation_type == self.last_layer_act_type:
@@ -97,8 +107,17 @@ class HiddenLayer:
         self.input=input
         return self.output
     
-    def backward(self, delta, output_layer=False):         
+    def backward(self, delta, output_layer=False, regularizer = None):   
+           
+        # need to check if this is correct, grad_w = dj/dz * dz/dw (input)
+        # is delta dj/dz ?               should grad_w be divided by m (number of instance)
         self.grad_W = np.atleast_2d(self.input).T.dot(np.atleast_2d(delta))
+             
+        # if there is a regularizer, add the deriv of regularization term to grad_W   
+        if(regularizer is not None):
+            self.grad_W = regularizer.backward(self.grad_W, self.W, self.m)
+
+        
         self.grad_b = delta
            
            
