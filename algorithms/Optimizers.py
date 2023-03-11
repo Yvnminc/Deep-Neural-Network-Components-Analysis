@@ -12,8 +12,8 @@ class GD_with_Momentum:
    #    return Momentum(self.beta)
 
     def update(self, lr, W, b, grad_W, grad_b):
-        self.v_W = self.beta * self.v_W +  (1 - beta) * grad_W
-        self.v_b = self.beta * self.v_b +  (1 - beta) * grad_b
+        self.v_W = self.beta * self.v_W +  (1 - self.beta) * grad_W
+        self.v_b = self.beta * self.v_b +  (1 - self.beta) * grad_b
         return W - lr * self.v_W, b - lr * self.v_b
 
    
