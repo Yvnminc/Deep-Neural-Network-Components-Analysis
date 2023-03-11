@@ -9,6 +9,7 @@ Reference: Week 2 tut sheet of COMP5329 Deep Learning,
 from .Activation import Activation
 from .HiddenLayer import HiddenLayer
 from .Loss import Loss
+from .Dropout import Dropout
 
 import numpy as np
 
@@ -17,7 +18,7 @@ class Mlp:
     """ 
 
     # for initiallization, the code will create all layers automatically based on the provided parameters.     
-    def __init__(self, layers, activation, loss = "CE"):
+    def __init__(self, layers, activation,  loss = "CE"):
         """
         :param layers: A list containing the number of units in each layer.
         Should be at least two values
@@ -29,11 +30,22 @@ class Mlp:
         self.params=[]
         self.loss = loss
 
+
+
+
+
+
+
         self.activation = activation
         last_act = self.activation[-1]
         print(self.activation[-1])
         self.criterion_loss = Loss(last_act, self.loss).cal_loss
-
+        
+           
+           
+           
+        # need to add dropout info when instantiating layers    !!! 
+        # could write a for loop + use set_keep_prob to set the keep prob for every layer and leave the last layer
         for i in range(len(layers)-1):
             self.layers.append(HiddenLayer(layers[i],layers[i+1],activation[i],activation[i+1]))
 
