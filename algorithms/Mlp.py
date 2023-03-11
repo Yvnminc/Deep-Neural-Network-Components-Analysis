@@ -11,6 +11,7 @@ from .HiddenLayer import HiddenLayer
 from .Loss import Loss
 from .Dropout import Dropout
 from .Optimizers import *
+from .WeightDecay import *
 
 import numpy as np
 
@@ -31,6 +32,7 @@ class Mlp:
         self.params=[]
         self.loss = loss
         self.optimizer = None
+        self.regularizer = None
 
 
 
@@ -48,6 +50,7 @@ class Mlp:
            
         # need to add dropout info when instantiating layers    !!! 
         # could write a for loop + use set_keep_prob to set the keep prob for every layer and leave the last layer
+        # alternatively, use add_layer for more felxible and pytorch like model builidng
         for i in range(len(layers)-1):
             self.layers.append(HiddenLayer(layers[i],layers[i+1],activation[i],activation[i+1]))
                       
@@ -57,7 +60,16 @@ class Mlp:
                       
                       
     def set_momentum(self, beta):
-           self.optimizer = GD_with_Momentum(beta)
+        self.optimizer = GD_with_Momentum(beta)
+    
+    def set_regularizer(self, lambda, reg_type):
+        if reg_type == "L2":
+            self.regularizer = L2(lambda)
+        elif reg_type == "L1":
+            self.regularizer = L1(lambda)
+        else:
+            self.regularizer = None 
+           
            
            
            
@@ -102,9 +114,9 @@ class Mlp:
     
 
     # forward progress: pass the information through the layers and out the results of final output layer
-    def forward(self,input):
+    def forward(self,input, train_mode):
         for layer in self.layers:
-            output=layer.forward(input)
+            output=layer.forward(input, regularizer = self.regularizer, mode = train_mode)
             input=output
         return output
 
@@ -123,16 +135,16 @@ class Mlp:
 
     # backward progress  
     def backward(self,delta):
-        delta = self.layers[-1].backward(delta,output_layer=True)
+        delta = self.layers[-1].backward(delta,output_layer=True, regularizer = self.regularizer)
         for layer in reversed(self.layers[:-1]):
-            delta=layer.backward(delta)
+            delta=layer.backward(delta, regularizer = self.regularizer)
 
     # update the network weights after backward.
     # make sure you run the backward function before the update function!    
     def update(self,lr):
         for layer in self.layers:
-            layer.W -= lr * layer.grad_W
-            layer.b -= lr * layer.grad_b
+           layer.update(lr)
+
 
     # define the training function
     # it will return all losses within the whole training process.
