@@ -19,7 +19,7 @@ class Mlp:
     """ 
 
     # for initiallization, the code will create all layers automatically based on the provided parameters.     
-    def __init__(self, layers, activation,  loss = "CE"):
+    def __init__(self, layers, activation , loss = "CE"):
         """
         :param layers: A list containing the number of units in each layer.
         Should be at least two values
@@ -30,6 +30,7 @@ class Mlp:
         self.layers=[]
         self.params=[]
         self.loss = loss
+        self.optimizer = None
 
 
 
@@ -49,6 +50,56 @@ class Mlp:
         # could write a for loop + use set_keep_prob to set the keep prob for every layer and leave the last layer
         for i in range(len(layers)-1):
             self.layers.append(HiddenLayer(layers[i],layers[i+1],activation[i],activation[i+1]))
+                      
+                      
+
+           
+                      
+                      
+    def set_momentum(self, beta):
+           self.optimizer = GD_with_Momentum(beta)
+           
+           
+           
+   
+    def add_layer(self, n_out, activation = relu(), keep_prob):
+
+        
+        
+
+        n_in = self.dims[-1]
+        # need to change layer class when instantiaing , when only need the activation for the current layer, and this could be set later
+        layer = HiddenLayer(n_in, n_out)
+        layer.setActivation(activation)
+        layer.setOptimizer(self.optimizer.clone())   
+
+        if(self.norm is not None):
+            layer.setBatchNormalizer(self.norm.clone())
+
+        layer.set_keep_prob(keep_prob)
+          
+
+        self.dims.append(n_out)
+        self.layers.append(layer)
+
+           
+           
+           
+           
+           
+           
+           
+           
+           
+           
+           
+           
+           
+           
+           
+           
+                      
+    
 
     # forward progress: pass the information through the layers and out the results of final output layer
     def forward(self,input):
