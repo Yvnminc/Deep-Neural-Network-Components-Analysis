@@ -22,6 +22,7 @@ class HiddenLayer:
         self.input=None
         self.activation=Activation(activation).f
         self.drop = None
+        self.optimizer = None   
         
         # potentially redundent, we probably only need the activation type and check if == "softmax" then final layer, if not then hidden layer
         # take less argument for instantiation. or we could just add a method called add_last_layer to handle the last layer      Leo
@@ -60,6 +61,11 @@ class HiddenLayer:
            
     def set_keep_prob(self, keep_prob):
         self.drop = Dropout(keep_prob)
+
+
+    # pass an optimizer object
+    def set_optimizer(self, optimizer):
+        self.optimizer = optimizer
            
            
     
@@ -105,3 +111,17 @@ class HiddenLayer:
         if self.activation_deriv:
             delta = delta.dot(self.W.T) * self.activation_deriv(self.input)
         return delta
+
+
+
+
+
+
+    def update(self,lr):
+                  
+        self.W, self.b= self.optimizer.update(lr, self.W, self.b, self.grad_W, self.grad_b)
+        
+
+        #update normalizer as well
+        if(self.BatchNormalizer is not None):
+            self.BatchNormalizer.update(lr)
