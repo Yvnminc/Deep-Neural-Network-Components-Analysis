@@ -7,9 +7,9 @@ class GD_with_Momentum:
         self.v_W = 0
         self.v_b = 0
         
-
-   # def clone(self):
-   #    return Momentum(self.beta)
+    # for copying the optimizer at model level and set optimizer for each layer 
+    def clone(self):
+        return GD_with_Momentum(self.beta)
 
     def update(self, lr, W, b, grad_W, grad_b):
         self.v_W = self.beta * self.v_W +  (1 - self.beta) * grad_W
