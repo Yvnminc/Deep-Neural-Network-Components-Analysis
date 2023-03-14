@@ -62,11 +62,11 @@ class Mlp:
     def set_momentum(self, beta):
         self.optimizer = GD_with_Momentum(beta)
     
-    def set_regularizer(self, lambda, reg_type):
+    def set_regularizer(self, lam, reg_type):
         if reg_type == "L2":
-            self.regularizer = L2(lambda)
+            self.regularizer = L2(lam)
         elif reg_type == "L1":
-            self.regularizer = L1(lambda)
+            self.regularizer = L1(lam)
         else:
             self.regularizer = None 
            
@@ -74,7 +74,7 @@ class Mlp:
            
            
    
-    def add_layer(self, n_out, activation = relu(), keep_prob):
+    def add_layer(self, n_out, activation = "relu", keep_prob = 0.1):
 
         
         

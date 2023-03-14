@@ -33,9 +33,6 @@ class HiddenLayer:
         # activation deriv of last layer
         self.activation_deriv=None
         
-        
-
-        
         if activation_last_layer:
             self.activation_deriv=Activation(activation_last_layer).f_deriv
 
@@ -55,14 +52,8 @@ class HiddenLayer:
         self.grad_W = np.zeros(self.W.shape)
         self.grad_b = np.zeros(self.b.shape)
            
-           
-           
-           
-           
-           
     def set_keep_prob(self, keep_prob):
         self.drop = Dropout(keep_prob)
-
 
     # pass an optimizer object
     def set_optimizer(self, optimizer):
@@ -70,7 +61,7 @@ class HiddenLayer:
            
            
     
-    def forward(self, input, regularizer = None, mode):
+    def forward(self, input, mode, regularizer = None):
         '''
         :type input: numpy.array
         :param input: a symbolic tensor of shape (n_in,)

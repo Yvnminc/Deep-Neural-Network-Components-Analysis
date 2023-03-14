@@ -21,9 +21,12 @@ class Loss:
         return loss,delta
     
     def __criterion_CE(self,y,y_hat):
+        """
+        y_hat: batch_size * n_class
+        y : batch_size * 1
+        y_actual_onehot: one hot encoding of y_hat, (batch_size * n_class)
+        """
         activation_deriv = Activation(self.activation).f_deriv
-
-        # Cross_Entropy
         batch_size = y.shape[0]
         
         # cross entropy
@@ -32,11 +35,13 @@ class Loss:
         y_hat = np.clip(y_hat, 1e-12, 1-1e-12)
         
         loss = - np.sum(np.multiply(y_actual_onehot, np.log(y_hat)))/batch_size
-
-        # calculate the MSE's delta of the output layer
-        delta= activation_deriv(y_actual_onehot, y_hat)
+        
+    
+        # derivative of cross entropy with softmax
+        # self.layers[-1] is the activation function
+        delta = activation_deriv(y_actual_onehot, y_hat)
         # return loss and delta
-        return loss,delta
+        return loss, delta
 
     def __init__(self, activation, loss = "MSE"):
         self.activation = activation

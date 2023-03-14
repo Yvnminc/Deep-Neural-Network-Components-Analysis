@@ -32,6 +32,20 @@ class Activation:
     def __relu_deriv(self, a):
         return np.int64(a > 0)
     
+    def __softmax(self, x):
+        """
+        Softmax function is unstable, so a popular choice is to -max(x)
+        to avoid NaN result caused by floating point limitation.
+        Reference: https://www.adeveloperdiary.com/data-science/deep-learning/neural-network-with-softmax-in-python/
+        """
+        mx = np.max(x, axis = 1, keepdims = True)
+        e = np.exp(x - mx)
+        res =  e / np.sum(e, axis = 1, keepdims = True)
+        return res
+       
+    def __softmax_deriv(self, y, y_pred):
+        return y_pred - y
+    
     def __init__(self,activation='tanh'):
         if activation == 'logistic':
             self.f = self.__logistic
@@ -44,3 +58,7 @@ class Activation:
         elif activation == 'relu':
             self.f = self.__relu
             self.f_deriv = self.__relu_deriv
+        
+        elif activation == 'softmax':
+            self.f = self.__softmax
+            self.f_deriv = self.__softmax_deriv

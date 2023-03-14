@@ -3,4 +3,4 @@ from .Mlp import *
 from .Activation import *
 from .HiddenLayer import *
 from .Dropout import *
-from .Optimizer import *
+from .Optimizers import *
