@@ -6,36 +6,18 @@ Reference: Week 2 tut sheet of COMP5329 Deep Learning,
            University of Sydney
 """
 import numpy as np
-from .Dropout import Dropout
-from .Activation import Activation
+from Dropout import Dropout
+from Activation import Activation
+from WeightDecay import *
 
 class HiddenLayer:
 
-    def __init__(self,n_in, n_out,
-                 activation_last_layer='tanh',activation='tanh',  W=None, b=None):
+    def __init__(self,n_in, n_out,last = False):
         '''
         Typical hidden layer of a MLP: units are fully-connected and have
         sigmoidal activation function. Weight matrix W is of shape (n_in,n_out)
         and the bias vector b is of shape (n_out,).
         '''
-        
-        self.input=None
-        self.activation=Activation(activation).f
-        self.drop = None
-        self.optimizer = None  
-        self.m = None
-        
-        # potentially redundent, we probably only need the activation type and check if == "softmax" then final layer, if not then hidden layer
-        # take less argument for instantiation. or we could just add a method called add_last_layer to handle the last layer      Leo
-        self.activation_type = activation
-        self.last_layer_act_type = activation_last_layer
-        
-        # activation deriv of last layer
-        self.activation_deriv=None
-        
-        if activation_last_layer:
-            self.activation_deriv=Activation(activation_last_layer).f_deriv
-
         # we randomly assign small values for the weights as the initiallization
         self.W = np.random.uniform(
                 low=-np.sqrt(6. / (n_in + n_out)),
@@ -51,17 +33,44 @@ class HiddenLayer:
         # we set he size of weight gradation as the size of weight
         self.grad_W = np.zeros(self.W.shape)
         self.grad_b = np.zeros(self.b.shape)
+
+        self.n_in = n_in
+        self.n_out = n_out
+        self.activation=None
+        self.optimizer = None
+        self.m = None
+        self.z = None
+        self.z_norm = None
+        self.a = None
+        self.a_dropout = None
+        
+        # dropout layer,not a prob
+        self.drop = None
+        self.input = None
+        self.last = last
+
+        # not sure if we need this
+        # activation deriv of last layer
+        # self.activation_deriv=None
+        
+        # if activation_last_layer:
+        #    self.activation_deriv=Activation(activation_last_layer).f_deriv
+
+
            
-    def set_keep_prob(self, keep_prob):
+    def set_drop_out_layer(self, keep_prob):
         self.drop = Dropout(keep_prob)
 
     # pass an optimizer object
     def set_optimizer(self, optimizer):
         self.optimizer = optimizer
+
+    def set_activation(self,activation):
+        self.activation = Activation(activation).f
            
            
     
-    def forward(self, input, mode, regularizer = None):
+    def forward(self, input, train_mode = True, regularizer = None):
         '''
         :type input: numpy.array
         :param input: a symbolic tensor of shape (n_in,)
@@ -69,58 +78,37 @@ class HiddenLayer:
         '''
         # number of instance
         self.m = input.shape[1]
+        self.input = input
+        
+
+        
+        self.z = np.dot(self.W,input) + self.b
+      
+
+        #batch normalize need to be done
+
+        #not sure
+        self.a  = self.activation(self.z)
 
 
-        if regularizer is not None:
+        if train_mode:
+            # this is model's regularizar that has been passed into layers for loss calculation
             regularizer.forward(self.W)
-           
-           
-           
-           
-        lin_output = np.dot(input, self.W) + self.b
+            self.a_dropout = self.drop.forward(self.a)
+        else:
+            self.a_dropout = self.a
         
-        # if self.activation_type == self.last_layer_act_type:
-        # check if this is the last layer by checking the activation type
-        # could be written as 
-        # if self.activation_type == "softmax"
-        # do batch norm and dropout here
-        
-        
+        return self.a_dropout
 
-        self.output = (
-            lin_output if self.activation is None
-            else self.activation(lin_output)
-        )
-           
-        # dropout after activation, need to set a keep probability with set_keep_prob, for final layer, should be 0
-        self.output = self.drop.forward(self.output, mode)
-           
-        self.input=input
-        return self.output
+  
     
     def backward(self, delta, output_layer=False, regularizer = None):   
-           
-        # need to check if this is correct, grad_w = dj/dz * dz/dw (input)
-        # is delta dj/dz ?               should grad_w be divided by m (number of instance)?
-        self.grad_W = np.atleast_2d(self.input).T.dot(np.atleast_2d(delta))
-             
-        # if there is a regularizer, add the deriv of regularization term to grad_W   
-        if(regularizer is not None):
-            self.grad_W = regularizer.backward(self.grad_W, self.W, self.m)
+        
+        if output_layer == True:
+            pass
+        else:
+            pass
 
-        # possibly incomplete
-        self.grad_b = delta
-           
-           
-           
-        # run drop out to backprob   
-        delta = self.drop.backward(delta)   
-           
-           
-           
-        if self.activation_deriv:
-            delta = delta.dot(self.W.T) * self.activation_deriv(self.input)
-        return delta
 
 
 

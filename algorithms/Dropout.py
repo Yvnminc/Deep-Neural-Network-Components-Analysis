@@ -18,24 +18,22 @@ class Dropout:
 
 
 
-    def forward(self, A, mode):
+    def forward(self, A):
       
-        # According to the mode, perform dropout and return the activation 
         
-        if mode == "train":
-            # Mask has the same shape as A
-            self.mask = np.random.rand(A.shape[0], A.shape[1])
-            # Turn the random number in mask into 0 and 1 
-            self.mask = (self.mask < self.keep_prob)
-            # Perfrom the element-wise multiplication and drop out some nodes in A
-            A = A * self.mask
-            # scale the remaing node up by the keep probability
-            A = A / self.keep_prob
-            return  A
+        
+        
+        # Mask has the same shape as A
+        self.mask = np.random.rand(A.shape[0], A.shape[1])
+        # Turn the random number in mask into 0 and 1 
+        self.mask = (self.mask < self.keep_prob)
+        # Perfrom the element-wise multiplication and drop out some nodes in A
+        A = A * self.mask
+        # scale the remaing node up by the keep probability
+        A = A / self.keep_prob
+        return  A
           
-        else:
-            # do not need to do drop out when testing
-            return  A
+
 
 
     def backward(self, dA):
