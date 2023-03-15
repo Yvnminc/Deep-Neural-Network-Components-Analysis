@@ -93,7 +93,8 @@ class HiddenLayer:
 
         if train_mode:
             # this is model's regularizar that has been passed into layers for loss calculation
-            regularizer.forward(self.W)
+            if regularizer is not None:
+                regularizer.forward(self.W)
             self.a_dropout = self.drop.forward(self.a)
         else:
             self.a_dropout = self.a
