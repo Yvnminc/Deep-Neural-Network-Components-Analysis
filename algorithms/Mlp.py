@@ -71,7 +71,7 @@ class Mlp:
         
         layer = HiddenLayer(n_in, n_out)
         layer.set_activation(activation)
-        layer.setOptimizer(self.optimizer.clone()) 
+        
 
 
         if(self.norm is not None):
@@ -81,7 +81,7 @@ class Mlp:
 
         if(self.optimizer != None):
             # calculations happen at each layer so every layer should have a optimizer object with the same beta
-            layer.setOptimizer(self.optimizer.clone())
+            layer.set_optimizer(self.optimizer.clone())
           
 
         self.dims.append(n_out)
@@ -91,7 +91,7 @@ class Mlp:
 
     # forward progress: pass the information through the layers and out the results of final output layer
     def forward(self, input, train_mode = True):
-
+       
         # reset regularizer for each epoch              
         if(self.regularizer is not None):
             self.regularizer.reset()   
@@ -99,6 +99,7 @@ class Mlp:
         for layer in self.layers:
             output = layer.forward(input, regularizer = self.regularizer, mode = train_mode)
             input = output
+        output = 0
         return output
 
     # define the objection/loss function, we use mean sqaure error (MSE) as the loss
