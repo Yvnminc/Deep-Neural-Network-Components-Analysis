@@ -90,16 +90,15 @@ class Mlp:
 
 
     # forward progress: pass the information through the layers and out the results of final output layer
-    def forward(self, my_input, train_mode = True):
+    def forward(self, input, train_mode = True):
 
-        output = None
         # reset regularizer for each epoch              
         if(self.regularizer is not None):
             self.regularizer.reset()   
            
         for layer in self.layers:
-            output = layer.forward(my_input, regularizer = self.regularizer, mode = train_mode)
-            my_input = output
+            output = layer.forward(input, regularizer = self.regularizer, mode = train_mode)
+            input = output
         return output
 
     # define the objection/loss function, we use mean sqaure error (MSE) as the loss
@@ -151,7 +150,7 @@ class Mlp:
                 
                 # forward pass
                 y_hat = self.forward(X[i])
-                
+
                 # backward pass
                 # loss[it],delta=self.criterion_MSE(y[i],y_hat)
 
