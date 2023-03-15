@@ -6,12 +6,12 @@ Reference: Week 2 tut sheet of COMP5329 Deep Learning,
            University of Sydney
 """
 
-from Activation import Activation
-from HiddenLayer import HiddenLayer
-from Loss import Loss
-from Dropout import Dropout
-from Optimizers import *
-from WeightDecay import *
+from .Activation import Activation
+from .HiddenLayer import HiddenLayer
+from .Loss import Loss
+from .Dropout import Dropout
+from .Optimizers import *
+from .WeightDecay import *
 import numpy as np
 
 
