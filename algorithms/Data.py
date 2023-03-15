@@ -28,21 +28,24 @@ class Data:
 
     # Assignments
     X = np.load(train_data_path)
-    y = np.load(train_label_path)
+    y = np.load(train_label_path).flatten()
 
     self.train_validation_split(X, y, split_rate)
-
     self.test_data = np.load(test_data_path)
-    self.test_label = np.load(test_label_path)
-  
+    self.test_label = np.load(test_label_path).flatten()
+    
+    self.one_hot()
+
   def get_train_data(self):
     '''
     Get method.
     '''
     return self.train_data
 
-  def one_hot(label):
-    return np.eye(np.max(label)+1)[label]
+  def one_hot(self):
+    self.train_label = np.eye(np.max(self.train_label)+1)[self.train_label]
+    self.validation_label = np.eye(np.max(self.validation_label)+1)[self.validation_label]
+    self.test_label = np.eye(np.max(self.test_label)+1)[self.test_label]
 
   def print_shapes(self):
     '''
@@ -51,7 +54,7 @@ class Data:
     print(self.train_data.shape)
     print(self.train_label.shape)
     print(self.validation_data.shape)
-    print(self.validation_data.shape)
+    print(self.validation_label.shape)
     print(self.test_data.shape)
     print(self.test_label.shape)
 
