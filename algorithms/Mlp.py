@@ -8,7 +8,6 @@ Reference: Week 2 tut sheet of COMP5329 Deep Learning,
 
 from .Activation import Activation
 from .HiddenLayer import HiddenLayer
-from .Loss import Loss
 from .Dropout import Dropout
 from .Optimizers import *
 from .WeightDecay import *
@@ -41,10 +40,7 @@ class Mlp:
         self.epoch = epoch
         self.keep_prob = keep_prob
         self.norm = None
-
-
-
-
+        self.n_out = 10
 
         # activation should be controled at layer level
         #self.activation = activation
@@ -53,15 +49,6 @@ class Mlp:
 
         # subsituted with set loss
         # self.criterion_loss = Loss(last_act, self.loss).cal_loss
-        
-           
-           
-           
-   
-                      
-                      
-    def set_loss(self, last_layer_acti):
-        self.criterion_loss = Loss(last_layer_acti, self.loss).cal_loss
                        
                       
     def set_momentum(self, beta):
@@ -85,7 +72,7 @@ class Mlp:
         layer = HiddenLayer(n_in, n_out)
         layer.set_activation(activation)
         layer.setOptimizer(self.optimizer.clone()) 
-     
+
 
         if(self.norm is not None):
             layer.setBatchNormalizer(self.norm.clone())
@@ -105,6 +92,7 @@ class Mlp:
     # forward progress: pass the information through the layers and out the results of final output layer
     def forward(self, my_input, train_mode = True):
 
+        output = None
         # reset regularizer for each epoch              
         if(self.regularizer is not None):
             self.regularizer.reset()   
@@ -167,7 +155,7 @@ class Mlp:
                 # backward pass
                 # loss[it],delta=self.criterion_MSE(y[i],y_hat)
 
-                loss[it],delta= self.criterion_loss(y[i],y_hat)
+                loss[it],delta= self.criterion_cross_entropy(y[i],y_hat)
 
                 self.backward(delta)
                 
@@ -184,3 +172,24 @@ class Mlp:
         for i in np.arange(x.shape[0]):
             output[i] = self.forward(x[i,:], train_mode=False)
         return output
+
+    def criterion_cross_entropy(self,y,y_hat):
+        """
+        y_hat: batch_size * n_class
+        y : batch_size * 1
+        y_actual_onehot: one hot encoding of y_hat, (batch_size * n_class)
+        """
+
+        batch_size = y.shape[0]
+
+        # avoid log() overflow problem
+        y_hat = np.clip(y_hat, 1e-12, 1-1e-12)
+        
+        loss = - np.sum(np.multiply(y, np.log(y_hat)))/batch_size
+        
+    
+        # derivative of cross entropy with softmax
+        # self.layers[-1] is the activation function
+        delta = self.layers[-1].f_deriv(y, y_hat)
+        # return loss and delta
+        return loss, delta
