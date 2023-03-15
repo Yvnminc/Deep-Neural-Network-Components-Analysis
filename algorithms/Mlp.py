@@ -90,14 +90,14 @@ class Mlp:
 
 
     # forward progress: pass the information through the layers and out the results of final output layer
-    def forward(self, input, train_mode = True):
+    def forward(self, input, mode = True):
        
         # reset regularizer for each epoch              
         if(self.regularizer is not None):
             self.regularizer.reset()   
            
         for layer in self.layers:
-            output = layer.forward(input, regularizer = self.regularizer, mode = train_mode)
+            output = layer.forward(input, regularizer = self.regularizer, train_mode = mode)
             input = output
         output = 0
         return output

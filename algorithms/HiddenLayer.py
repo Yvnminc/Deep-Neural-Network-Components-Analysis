@@ -82,7 +82,7 @@ class HiddenLayer:
         
 
         
-        self.z = np.dot(self.W,input) + self.b
+        self.z = np.dot(input,self.W) + self.b
       
 
         #batch normalize need to be done
