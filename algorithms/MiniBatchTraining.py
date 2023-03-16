@@ -17,7 +17,7 @@ class MiniBatch:
         :param batch_size: a hyperparameter that defines the size of a batch
         """
         mini_batches = []
-        data = np.stack((X, Y), axis=1)
+        data = np.vstack((X, Y))
         np.random.shuffle(data)
         num_batches = X.shape[0] // batch_size
         for i in range(num_batches):

@@ -1,9 +1,12 @@
 """
-File name: HiddenLayer.py
-Authors: Yanming Guo, Yongjiang Shi
+File name: Layer.py
+Authors: Yanming Guo
 Description: Defines the layer operation of the nn.
 Reference: Week 2 tut sheet of COMP5329 Deep Learning,
            University of Sydney
+
+           https://github.com/zhuqiangLu/COMP5329Assignment_1/blob/
+           bfdddc1cebf798e44f7b45baf7e26cbbbf19828c/Code/Algorithm/Layer.py#L119
 """
 import numpy as np
 from .Dropout import Dropout
@@ -18,6 +21,8 @@ class HiddenLayer:
         sigmoidal activation function. Weight matrix W is of shape (n_in,n_out)
         and the bias vector b is of shape (n_out,).
         '''
+
+        # self.FC = FullyConnected(n_in, n_out)
         # we randomly assign small values for the weights as the initiallization
         self.W = np.random.uniform(
                 low=-np.sqrt(6. / (n_in + n_out)),
@@ -51,8 +56,9 @@ class HiddenLayer:
 
         # not sure if we need this
         # activation deriv of last layer
-        # self.activation_deriv=None
+        self.activation_deriv = None
         
+        self.batchNormalizer = None
         # if activation_last_layer:
         #    self.activation_deriv=Activation(activation_last_layer).f_deriv
 
@@ -68,13 +74,19 @@ class HiddenLayer:
     def set_activation(self,activation):
         self.activation = Activation(activation).f
            
-           
+    def set_activation_deriv(self,activation):
+        self.activation_deriv = Activation(activation).f_deriv
     
+    def set_batchNormalizer(self,norm):
+        if(norm != None):
+            self.batchNormalizer = norm
+
     def forward(self, input, train_mode = True, regularizer = None):
         '''
         :type input: numpy.array
         :param input: a symbolic tensor of shape (n_in,)
-        :mode: a string indicating if we are currently training, to indicate we are training , input "train"
+        :mode: a string indicating if we are currently training, 
+        to indicate we are training , input "train"
         '''
         # number of instance
         self.m = input.shape[1]
@@ -103,24 +115,94 @@ class HiddenLayer:
 
   
     
-    def backward(self, delta, output_layer=False, regularizer = None):   
-        
+    def backward(self, delta, output_layer=False, regularizer = None): 
+
+        dz = None
         if output_layer == True:
-            pass
+            dz = delta
         else:
-            pass
+            da = self.drop.backward(delta)
+            if(self.activation is not None):
+                dz_norm = self.activation_deriv(self.a) * da
+            else:
+                dz_norm = da
+                
+            if(self.batchNormalizer is not None):
+                dz = self.batchNormalizer.backward(dz_norm)
+            else:
+                dz = dz_norm
 
+        #first calculate the dw for this layer,
+        #dw = dj/dz * dz/dw <- the input of this layer
+        m = self.input.shape[1]
 
+        self.grad_W = np.atleast_2d(self.input).T.dot(np.atleast_2d(delta))
 
+        if(regularizer is not None):
+            self.grad_W = regularizer.backward(self.grad_W, self.W, m)
 
+        #db is the sum of row of delta
 
+        self.grad_b = np.mean(delta,axis = 0)
 
+        #calculate da of this layers
+        dinput = np.dot(dz, self.W.T)
+        return dinput
 
     def update(self,lr):
-                  
-        self.W, self.b= self.optimizer.update(lr, self.W, self.b, self.grad_W, self.grad_b)
-        
+        if(self.optimizer != None):
+            self.FC.W = self.optimizer.update_W(lr, self.FC.W, self.FC.grad_W)
+            self.FC.b = self.optimizer.update_b(lr, self.FC.b, self.FC.grad_b)
+        else:
+            self.FC.W = self.FC.W - lr * self.FC.grad_W
+            self.FC.b = self.FC.b - lr * self.FC.grad_b
 
         #update normalizer as well
-        if(self.BatchNormalizer is not None):
-            self.BatchNormalizer.update(lr)
+        if(self.batchNormalizer is not None):
+            self.batchNormalizer.update(lr)
+
+class FullyConnected(object):
+    def __init__(self, n_in, n_out):
+        self.input = None
+        #init W and b using the given initializer
+        self.W = np.random.uniform(
+                low=-np.sqrt(6. / (n_in + n_out)),
+                high=np.sqrt(6. / (n_in + n_out)),
+                size=(n_in, n_out)
+        )
+        # if activation == 'logistic':
+        #     self.W *= 4
+
+        # we set the size of bias as the size of output dimension
+        self.b = np.zeros(n_out,)
+
+        #create instance variables for grad_w and grad_b
+        self.grad_W = np.zeros(self.W.shape)
+        self.grad_b = np.zeros(self.b.shape)
+
+    def forward(self, input, regularizer = None):
+
+        if regularizer is not None:
+            regularizer.forward(self.W)
+        self.input = input
+        return np.dot(self.W,input) + self.b
+
+
+    def backward(self, dz, regularizer = None):
+        m = self.input.shape[1]
+
+        #first calculate the dw for this layer,
+        #dw = dj/dz * dz/dw <- the input of this layer
+        self.grad_W = np.dot(dz, self.input.T)/m
+        if(regularizer is not None):
+            self.grad_W = regularizer.backward(self.grad_W, self.W, m)
+
+        #db is the sum of row of delta
+
+        self.grad_b = np.sum(dz, axis = 1, keepdims = True)/m
+
+
+        #calculate da of this layers
+        da = np.dot(self.W.T, dz)
+
+        return da

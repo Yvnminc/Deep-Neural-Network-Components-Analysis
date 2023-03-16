@@ -11,8 +11,8 @@ from .HiddenLayer import HiddenLayer
 from .Dropout import Dropout
 from .Optimizers import *
 from .WeightDecay import *
-from BatchNormalization import *
-from MiniBatchTraining import *
+from .BatchNormalization import *
+from .MiniBatchTraining import *
 import numpy as np
 
 
@@ -68,9 +68,10 @@ class Mlp:
     def add_layer(self, n_in,n_out, activation, keep_prob):
         layer = HiddenLayer(n_in, n_out)
         layer.set_activation(activation)
+        layer.set_activation_deriv(activation)
 
         if(self.norm is not None):
-            layer.setBatchNormalizer(self.norm.clone())
+            layer.setatchNormalizer(self.norm.clone())
 
         layer.set_drop_out_layer(keep_prob)
 
@@ -135,7 +136,7 @@ class Mlp:
 
     # define the training function
     # it will return all losses within the whole training process.
-    def fit(self, X, y, epochs, criterion):
+    def fit(self, X, y, epochs):
         """
         mini-batch trainnig process.
         :param X: Input data or features, assume with shape (n_features, n_examples)
@@ -164,7 +165,7 @@ class Mlp:
                     # forward pass
                     y_hat = self.forward(X_b[j])
                     # backward pass
-                    batch_loss[j], delta = criterion(Y_b[j], y_hat)
+                    batch_loss[j], delta = self.criterion_cross_entropy(Y_b[j], y_hat)
                     self.backward(delta)
 
                     self.update()
