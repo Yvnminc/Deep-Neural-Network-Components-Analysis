@@ -7,7 +7,7 @@ Reference: https://arxiv.org/pdf/1502.03167.pdf
 import numpy as np
 
 class BatchNormalization:
-    def __init__(self, momentum = 0.9, optimizer = None):
+    def __init__(self, momentum=0.9, optimizer=None):
         """
         initialization of batch normalization
         :param momentum: a hyperparameter that controls the momentum in gradient descent based optimization
@@ -43,13 +43,19 @@ class BatchNormalization:
     def set_optimizer(self, optimizer):
         self.optimizer = optimizer
 
+    def clone(self):
+        opt = None
+        if self.optimizer is not None:
+            opt = self.optimizer.clone()
+        return BatchNormalization(self.momentum, opt)
+
     def __init_param(self, d):
         self.gamma = np.ones((d, 1))
         self.beta = np.zeros((d, 1))
         self.avg_mean = np.zeros((d, 1))
         self.avg_var = np.zeros((d, 1))
 
-    def forward(self, x, training, epsilon = 1e-8):
+    def forward(self, x, training, epsilon=1e-8):
         '''
         Batch Nomalization Transform, applied to activation x over a mini-batch
         '''
