@@ -1,6 +1,6 @@
 """
-File name: Layer.py
-Authors: Yanming Guo
+File name: HiddenLayer.py
+Authors: Yanming Guo, Yongjiang Shi
 Description: Defines the layer operation of the nn.
 Reference: Week 2 tut sheet of COMP5329 Deep Learning,
            University of Sydney

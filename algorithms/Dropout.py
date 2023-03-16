@@ -1,14 +1,28 @@
+"""
+File name: Dropout.py
+Authors: Yongjiang Shi
+Description: The Dropout class allows performing regularization on the activation result through droping 
+some nodes in a layer during training. In back propagation, we adjust the weight for nodes in the same layer that 
+was not been masked during the forward phase.
+
+"""
+
+
+
+
 import numpy as np
 
 class Dropout:
     """
-    Description: The Dropout class allows performing regularization on the activation result through droping some nodes in a layer during training.
+    Description: The Dropout class allows performing regularization on the activation result through droping 
+    some nodes in a layer during training.
     
     Attribute:
     - keep_prob: the probability of a node not being dropped
     
     Method:
-    - forward(A, mode): takes a activation result for one layer and apply a dropout mask on it so some of the activation becomes 0, this only happens when mode = "train"
+    - forward(A, mode): takes a activation result for one layer and apply a dropout mask on it so some of the activation becomes 0, 
+    this only happens when mode = "train"
     - backward(dA): apply back prop on the layer that has went through the dropout process
     
     """

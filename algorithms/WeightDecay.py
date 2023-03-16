@@ -1,3 +1,11 @@
+"""
+File name: WeightDecay.py
+Authors: Yongjiang Shi
+Description: Defines the regularizers that could been used for the model. 
+Such as L2 and L1 regularizations.
+
+"""
+
 import numpy as np
 
 class L2:

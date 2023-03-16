@@ -1,3 +1,13 @@
+"""
+File name: Optimizers.py
+Authors: Yongjiang Shi
+Description: Defines the gradient descent optimizer with momentum setting allowed, 
+if beta is set to 0 then it is standard gradient descent, otherwise it will be gradient 
+descent with momentum.
+
+"""
+
+
 class GD_with_Momentum:
     def __init__(self, beta = 0):
         # with beta = 0, it will be gradient descent without momentum

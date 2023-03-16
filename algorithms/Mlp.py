@@ -1,6 +1,6 @@
 """
 File name: MLP.py
-Authors: Yanming Guo
+Authors: Yanming Guo, Yongjiang Shi
 Description: Defines the MLP model with full configs.
 Reference: Week 2 tut sheet of COMP5329 Deep Learning,
            University of Sydney
