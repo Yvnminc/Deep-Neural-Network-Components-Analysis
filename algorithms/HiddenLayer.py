@@ -81,6 +81,7 @@ class HiddenLayer:
         if(norm != None):
             self.batchNormalizer = norm
 
+
     def forward(self, input, train_mode = True, regularizer = None):
         '''
         :type input: numpy.array
@@ -98,9 +99,13 @@ class HiddenLayer:
       
 
         #batch normalize need to be done
+        if(self.batchNormalizer is not None):
+            self.z_norm = self.batchNormalizer.forward(self.z, train_mode)
+        else:
+            self.z_norm = self.z
 
         #not sure
-        self.a  = self.activation(self.z)
+        self.a  = self.activation(self.z_norm)
 
 
         if train_mode:
@@ -150,16 +155,12 @@ class HiddenLayer:
         return dinput
 
     def update(self,lr):
-        if(self.optimizer != None):
-            self.FC.W = self.optimizer.update_W(lr, self.FC.W, self.FC.grad_W)
-            self.FC.b = self.optimizer.update_b(lr, self.FC.b, self.FC.grad_b)
-        else:
-            self.FC.W = self.FC.W - lr * self.FC.grad_W
-            self.FC.b = self.FC.b - lr * self.FC.grad_b
-
+        self.W, self.b= self.optimizer.update(lr, self.W, self.b, self.grad_W, self.grad_b)
+    
         #update normalizer as well
         if(self.batchNormalizer is not None):
             self.batchNormalizer.update(lr)
+
 
 class FullyConnected(object):
     def __init__(self, n_in, n_out):

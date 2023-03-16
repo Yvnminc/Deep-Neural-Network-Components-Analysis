@@ -14,14 +14,14 @@ from .WeightDecay import *
 from .BatchNormalization import *
 from .MiniBatchTraining import *
 import numpy as np
-
+import time
 
 class Mlp:
     """
     """
     # for initiallization, the code will create all layers automatically based on the provided parameters.  
     # can we set all initilization parameter with a set_para method?   
-    def __init__(self, learning_rate=0.001, batch_size=1, keep_prob=1, loss="CE", epoch=100, norm=None):
+    def __init__(self, learning_rate=0.1, batch_size=1, keep_prob=1, loss="CE", epoch=100, norm=None):
         """
         :param layers: A list containing the number of units in each layer.
         Should be at least two values
@@ -56,6 +56,9 @@ class Mlp:
     def set_momentum(self, beta):
         self.optimizer = GD_with_Momentum(beta)
     
+    def set_batchNormalizer(self):
+        self.norm = BatchNormalization()
+
     def set_regularizer(self, lam, reg_type):
         if reg_type == "L2":
             self.regularizer = L2(lam)
@@ -71,7 +74,7 @@ class Mlp:
         layer.set_activation_deriv(activation)
 
         if(self.norm is not None):
-            layer.setatchNormalizer(self.norm.clone())
+            layer.set_batchNormalizer(self.norm.clone())
 
         layer.set_drop_out_layer(keep_prob)
 
@@ -151,6 +154,7 @@ class Mlp:
         to_return = np.zeros(epochs)
 
         for k in range(epochs):
+            time_start = time.time()
             batches = self.batch.get_batch(X, y, self.batch_size)
             loss = np.zeros(len(batches))
             index = 0
@@ -161,15 +165,11 @@ class Mlp:
                 # dW = []
                 # db = []
                 batch_loss = np.zeros(X_b.shape[0])
-                for j in range(X_b.shape[0]):
-                    # forward pass
-                    print(X_b[j].shape)
-                    y_hat = self.forward(X_b[j])
-                    # backward pass
-                    batch_loss[j], delta = self.criterion_cross_entropy(Y_b[j], y_hat)
-                    self.backward(delta)
+                y_hat = self.forward(X_b)
+                batch_loss, delta = self.criterion_cross_entropy(Y_b, y_hat)
+                self.backward(delta)
+                self.update()
 
-                    self.update()
                 #     layer_grad_W, layer_grad_b = self.get_grads()
                 #     dW.append(layer_grad_W)
                 #     db.append(layer_grad_b)
@@ -185,6 +185,9 @@ class Mlp:
                 # # update weights with batch gradient
                 # self.batch_update(DW, Db)
             to_return[k] = np.mean(loss)
+            print(k+1)
+            print(to_return[k])
+            print(time.time() - time_start)
         return to_return
 
     # define the prediction function
@@ -211,6 +214,6 @@ class Mlp:
     
         # derivative of cross entropy with softmax
         # self.layers[-1] is the activation function
-        delta = self.layers[-1].f_deriv(y, y_hat)
+        delta = self.layers[-1].activation_deriv(y, y_hat)
         # return loss and delta
         return loss, delta
