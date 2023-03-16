@@ -33,10 +33,6 @@ class Dropout:
 
 
     def forward(self, A):
-      
-        
-        
-        
         # Mask has the same shape as A
         self.mask = np.random.rand(A.shape[0], A.shape[1])
         # Turn the random number in mask into 0 and 1 

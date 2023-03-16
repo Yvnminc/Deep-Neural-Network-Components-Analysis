@@ -163,6 +163,7 @@ class Mlp:
                 batch_loss = np.zeros(X_b.shape[0])
                 for j in range(X_b.shape[0]):
                     # forward pass
+                    print(X_b[j].shape)
                     y_hat = self.forward(X_b[j])
                     # backward pass
                     batch_loss[j], delta = self.criterion_cross_entropy(Y_b[j], y_hat)

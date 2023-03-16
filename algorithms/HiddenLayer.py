@@ -89,7 +89,7 @@ class HiddenLayer:
         to indicate we are training , input "train"
         '''
         # number of instance
-        self.m = input.shape[1]
+        self.m = input.shape[0]
         self.input = input
         
 
