@@ -1,6 +1,6 @@
 """
 File name: MLP.py
-Authors: Yanming Guo, Yongjiang Shi
+Authors: Yanming Guo, Yongjiang Shi, Jiacheng Zhang
 Description: Defines the MLP model with full configs.
 Reference: Week 2 tut sheet of COMP5329 Deep Learning,
            University of Sydney
@@ -21,7 +21,7 @@ class Mlp:
     """
     # for initiallization, the code will create all layers automatically based on the provided parameters.  
     # can we set all initilization parameter with a set_para method?   
-    def __init__(self, learning_rate=0.1, batch_size=1, keep_prob=1, loss="CE", epoch=100, norm=None):
+    def __init__(self, learning_rate=0.1, batch_size=1, keep_prob=1, loss="CE", norm=None):
         """
         :param layers: A list containing the number of units in each layer.
         Should be at least two values
@@ -36,7 +36,6 @@ class Mlp:
         self.loss = loss
         self.optimizer = None
         self.regularizer = None
-        self.epoch = epoch
         self.keep_prob = keep_prob
         self.norm = norm
         self.batch = MiniBatch()
@@ -68,17 +67,17 @@ class Mlp:
             self.regularizer = None
            
     # if it is last layer, activation should be set to softmax and keep_prob should be set to 1
-    def add_layer(self, n_in,n_out, activation, keep_prob):
+    def add_layer(self, n_in, n_out, activation, keep_prob):
         layer = HiddenLayer(n_in, n_out)
         layer.set_activation(activation)
         layer.set_activation_deriv(activation)
 
-        if(self.norm is not None):
+        if self.norm is not None:
             layer.set_batchNormalizer(self.norm.clone())
 
         layer.set_drop_out_layer(keep_prob)
 
-        if(self.optimizer != None):
+        if self.optimizer != None:
             # calculations happen at each layer so every layer should have a optimizer object with the same beta
             layer.set_optimizer(self.optimizer.clone())
         self.dims.append(n_out)
@@ -88,7 +87,7 @@ class Mlp:
     def forward(self, input, mode=True):
         output = 0
         # reset regularizer for each epoch              
-        if(self.regularizer is not None):
+        if self.regularizer is not None:
             self.regularizer.reset()   
            
         for layer in self.layers:
@@ -158,48 +157,33 @@ class Mlp:
             batches = self.batch.get_batch(X, y, self.batch_size)
             loss = np.zeros(len(batches))
             index = 0
-
             for batch in batches:
                 X_b = np.array(batch[0])
                 Y_b = np.array(batch[1])
-                # dW = []
-                # db = []
-                batch_loss = np.zeros(X_b.shape[0])
                 y_hat = self.forward(X_b)
                 batch_loss, delta = self.criterion_cross_entropy(Y_b, y_hat)
                 self.backward(delta)
                 self.update()
-
-                #     layer_grad_W, layer_grad_b = self.get_grads()
-                #     dW.append(layer_grad_W)
-                #     db.append(layer_grad_b)
                 loss[index] = np.mean(batch_loss)
                 index += 1
-                # gradients_W = {}
-                # gradients_b = {}
-                # for i in range(len(self.layers)):
-                #     gradients_W[i] = np.array([j[i] for j in dW]).mean(axis=0)
-                #     gradients_b[i] = np.array([j[i] for j in db]).mean(axis=0)
-                # DW = [i for j, i in gradients_W.items()]
-                # Db = [i for j, i in gradients_b.items()]
-                # # update weights with batch gradient
-                # self.batch_update(DW, Db)
             to_return[k] = np.mean(loss)
-            print(k+1)
-            print(to_return[k])
-            print(time.time() - time_start)
+            print('Epoch:', k+1, ' Training Loss:', to_return[k], ' Time (sec):', time.time() - time_start)
         return to_return
 
     # define the prediction function
     # we can use predict function to predict the results of new data, by using the well-trained network.
+    # def predict(self, x):
+    #     x = np.array(x)
+    #     output = np.zeros(x.shape[0])
+    #     for i in np.arange(x.shape[0]):
+    #         output[i] = self.forward(x[i,:], mode=False)
+    #     return output
     def predict(self, x):
         x = np.array(x)
-        output = np.zeros(x.shape[0])
-        for i in np.arange(x.shape[0]):
-            output[i] = self.forward(x[i,:], mode=False)
-        return output
+        self.forward(x, mode=False)  # regularizer collect W during forward
+        return x
 
-    def criterion_cross_entropy(self,y,y_hat):
+    def criterion_cross_entropy(self, y, y_hat):
         """
         y_hat: batch_size * n_class
         y : batch_size * 1

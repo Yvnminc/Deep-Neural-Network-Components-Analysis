@@ -59,10 +59,12 @@ class BatchNormalization:
         '''
         Batch Nomalization Transform, applied to activation x over a mini-batch
         '''
-        if self.gamma is None or self.beta is None:
+        if self.gamma is None and self.beta is None:
             self.__init_param(x.shape[0])
 
         if not training:
+            # print(x.shape)
+            # print(self.avg_mean.shape)
             x_hat = (x - self.avg_mean)/np.sqrt(self.avg_var + epsilon)
             return (self.gamma * x_hat) + self.beta
 

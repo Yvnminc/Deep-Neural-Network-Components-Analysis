@@ -1,6 +1,6 @@
 """
 File name: Layer.py
-Authors: Yanming Guo
+Authors: Yanming Guo, Yongjiang Shi, Jiacheng Zhang
 Description: Defines the layer operation of the nn.
 Reference: Week 2 tut sheet of COMP5329 Deep Learning,
            University of Sydney
@@ -15,7 +15,7 @@ from .WeightDecay import *
 
 class HiddenLayer:
 
-    def __init__(self,n_in, n_out,last = False):
+    def __init__(self, n_in, n_out, last = False):
         '''
         Typical hidden layer of a MLP: units are fully-connected and have
         sigmoidal activation function. Weight matrix W is of shape (n_in,n_out)
@@ -62,8 +62,6 @@ class HiddenLayer:
         # if activation_last_layer:
         #    self.activation_deriv=Activation(activation_last_layer).f_deriv
 
-
-           
     def set_drop_out_layer(self, keep_prob):
         self.drop = Dropout(keep_prob)
 
@@ -71,18 +69,17 @@ class HiddenLayer:
     def set_optimizer(self, optimizer):
         self.optimizer = optimizer
 
-    def set_activation(self,activation):
+    def set_activation(self, activation):
         self.activation = Activation(activation).f
            
-    def set_activation_deriv(self,activation):
+    def set_activation_deriv(self, activation):
         self.activation_deriv = Activation(activation).f_deriv
     
-    def set_batchNormalizer(self,norm):
-        if(norm != None):
+    def set_batchNormalizer(self, norm):
+        if norm != None:
             self.batchNormalizer = norm
 
-
-    def forward(self, input, train_mode = True, regularizer = None):
+    def forward(self, input, train_mode=True, regularizer=None):
         '''
         :type input: numpy.array
         :param input: a symbolic tensor of shape (n_in,)
@@ -92,21 +89,16 @@ class HiddenLayer:
         # number of instance
         self.m = input.shape[0]
         self.input = input
-        
+        self.z = np.dot(input, self.W) + self.b
 
-        
-        self.z = np.dot(input,self.W) + self.b
-      
-
-        #batch normalize need to be done
-        if(self.batchNormalizer is not None):
+        # batch normalization
+        if self.batchNormalizer is not None:
             self.z_norm = self.batchNormalizer.forward(self.z, train_mode)
         else:
             self.z_norm = self.z
 
         #not sure
-        self.a  = self.activation(self.z_norm)
-
+        self.a = self.activation(self.z_norm)
 
         if train_mode:
             # this is model's regularizar that has been passed into layers for loss calculation
@@ -117,48 +109,44 @@ class HiddenLayer:
             self.a_dropout = self.a
         
         return self.a_dropout
-
-  
     
-    def backward(self, delta, output_layer=False, regularizer = None): 
-
-        dz = None
+    def backward(self, delta, output_layer=False, regularizer = None):
         if output_layer == True:
             dz = delta
         else:
             da = self.drop.backward(delta)
-            if(self.activation is not None):
+            if self.activation is not None:
                 dz_norm = self.activation_deriv(self.a) * da
             else:
                 dz_norm = da
                 
-            if(self.batchNormalizer is not None):
+            if self.batchNormalizer is not None:
                 dz = self.batchNormalizer.backward(dz_norm)
             else:
                 dz = dz_norm
 
-        #first calculate the dw for this layer,
-        #dw = dj/dz * dz/dw <- the input of this layer
+        # first calculate the dw for this layer,
+        # dw = dj/dz * dz/dw <- the input of this layer
         m = self.input.shape[1]
 
         self.grad_W = np.atleast_2d(self.input).T.dot(np.atleast_2d(delta))
 
-        if(regularizer is not None):
+        if regularizer is not None:
             self.grad_W = regularizer.backward(self.grad_W, self.W, m)
 
-        #db is the sum of row of delta
+        # db is the sum of row of delta
 
         self.grad_b = np.mean(delta,axis = 0)
 
-        #calculate da of this layers
+        # calculate da of this layers
         dinput = np.dot(dz, self.W.T)
         return dinput
 
-    def update(self,lr):
-        self.W, self.b= self.optimizer.update(lr, self.W, self.b, self.grad_W, self.grad_b)
+    def update(self, lr):
+        self.W, self.b = self.optimizer.update(lr, self.W, self.b, self.grad_W, self.grad_b)
     
-        #update normalizer as well
-        if(self.batchNormalizer is not None):
+        # update normalizer as well
+        if self.batchNormalizer is not None:
             self.batchNormalizer.update(lr)
 
 
