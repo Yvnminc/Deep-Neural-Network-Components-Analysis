@@ -91,6 +91,7 @@ class Mlp:
             self.regularizer.reset()   
            
         for layer in self.layers:
+            #print(input.shape)
             output = layer.forward(input, regularizer=self.regularizer, train_mode=mode)
             input = output
         return output
@@ -180,7 +181,8 @@ class Mlp:
     #     return output
     def predict(self, x):
         x = np.array(x)
-        self.forward(x, mode=False)  # regularizer collect W during forward
+        for layer in self.layers:
+            x = layer.forward(x, train_mode = False)#regularizer collect W during forward
         return x
 
     def criterion_cross_entropy(self, y, y_hat):
