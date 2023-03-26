@@ -133,8 +133,11 @@ class HiddenLayer:
         # dw = dj/dz * dz/dw <- the input of this layer
         # m should be the first dimension of the input
         m = self.input.shape[0]
+        print("input shape", self.input.shape)
+        print("delta", delta.shape)
+        print("dz", dz.shape)
 
-        self.grad_W = np.atleast_2d(self.input).T.dot(np.atleast_2d(delta))
+        self.grad_W = np.dot( self.input.T,dz)/m
 
         if regularizer is not None:
             self.grad_W = regularizer.backward(self.grad_W, self.W, m)
