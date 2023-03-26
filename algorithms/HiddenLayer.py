@@ -15,7 +15,7 @@ from .WeightDecay import *
 
 class HiddenLayer:
 
-    def __init__(self, n_in, n_out, last = False):
+    def __init__(self, n_in, n_out):
         '''
         Typical hidden layer of a MLP: units are fully-connected and have
         sigmoidal activation function. Weight matrix W is of shape (n_in,n_out)
@@ -52,10 +52,10 @@ class HiddenLayer:
         # dropout layer,not a prob
         self.drop = None
         self.input = None
-        self.last = last
+        
 
-        # not sure if we need this
-        # activation deriv of last layer
+        
+        # activation deriv 
         self.activation_deriv = None
         
         self.batchNormalizer = None
@@ -101,7 +101,7 @@ class HiddenLayer:
         else:
             self.z_norm = self.z
 
-        #not sure
+        
         self.a = self.activation(self.z_norm)
 
         if train_mode:
@@ -131,7 +131,8 @@ class HiddenLayer:
 
         # first calculate the dw for this layer,
         # dw = dj/dz * dz/dw <- the input of this layer
-        m = self.input.shape[1]
+        # m should be the first dimension of the input
+        m = self.input.shape[0]
 
         self.grad_W = np.atleast_2d(self.input).T.dot(np.atleast_2d(delta))
 

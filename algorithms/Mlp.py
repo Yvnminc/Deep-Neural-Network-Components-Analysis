@@ -77,7 +77,7 @@ class Mlp:
 
         layer.set_drop_out_layer(keep_prob)
 
-        if self.optimizer != None:
+        if self.optimizer is not None:
             # calculations happen at each layer so every layer should have a optimizer object with the same beta
             layer.set_optimizer(self.optimizer.clone())
         self.dims.append(n_out)
