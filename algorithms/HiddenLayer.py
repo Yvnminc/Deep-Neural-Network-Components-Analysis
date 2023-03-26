@@ -133,9 +133,8 @@ class HiddenLayer:
         # dw = dj/dz * dz/dw <- the input of this layer
         # m should be the first dimension of the input
         m = self.input.shape[0]
-        print("input shape", self.input.shape)
-        print("delta", delta.shape)
-        print("dz", dz.shape)
+        
+
 
         self.grad_W = np.dot( self.input.T,dz)/m
 
@@ -144,9 +143,14 @@ class HiddenLayer:
 
         # db is the sum of row of delta
 
-        self.grad_b = np.mean(delta,axis = 0)
-
+        self.grad_b = np.sum(dz, axis = 0,keepdims = True)/m
+       
         # calculate da of this layers
+        # dz (m, out)
+        # W (in, out)
+  
+
+
         dinput = np.dot(dz, self.W.T)
         return dinput
 
