@@ -23,7 +23,7 @@ class MlpV2:
     """
     # for initiallization, the code will create all layers automatically based on the provided parameters.  
     # can we set all initilization parameter with a set_para method?   
-    def __init__(self, learning_rate=0.1, batch_size=1, keep_prob=1, loss="CE", norm=None):
+    def __init__(self, learning_rate=0.1, batch_size=1, keep_prob=1, norm=None):
         """
         :param layers: A list containing the number of units in each layer.
         Should be at least two values
@@ -35,7 +35,6 @@ class MlpV2:
         #need to add training data size to index 0 in dims
         self.dims = []
         self.lr = learning_rate
-        self.loss = loss
         self.optimizer = None
         self.regularizer = None
         self.keep_prob = keep_prob
