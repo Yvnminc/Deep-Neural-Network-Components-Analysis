@@ -88,9 +88,13 @@ class HiddenLayer:
         '''
         # number of instance
         self.m = input.shape[0]
+        #print("n_node", self.n_in)
+        #print("input",input.shape)
         self.input = input
         self.z = np.dot(input, self.W) + self.b
+        #print("z",self.z.shape)
 
+        #print("w",self.W.shape)
         # batch normalization
         if self.batchNormalizer is not None:
             self.z_norm = self.batchNormalizer.forward(self.z, train_mode)

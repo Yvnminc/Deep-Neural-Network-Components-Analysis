@@ -50,31 +50,36 @@ class BatchNormalization:
         return BatchNormalization(self.momentum, opt)
 
     def __init_param(self, d):
-        self.gamma = np.ones((d, 1))
-        self.beta = np.zeros((d, 1))
-        self.avg_mean = np.zeros((d, 1))
-        self.avg_var = np.zeros((d, 1))
+        self.gamma = np.ones((1,d))
+        self.beta = np.zeros((1,d))
+        self.avg_mean = np.zeros((1,d))
+        self.avg_var = np.zeros((1,d))
 
     def forward(self, x, training, epsilon=1e-8):
         '''
         Batch Nomalization Transform, applied to activation x over a mini-batch
         '''
         if self.gamma is None and self.beta is None:
-            self.__init_param(x.shape[0])
+            # 改了这里， 因为是每个feature一个mean
+            self.__init_param(x.shape[1])
 
+
+        #print("data shape",x.shape)
+        #print("old avg mean shape",self.avg_mean.shape)
         if not training:
-            # print(x.shape)
-            # print(self.avg_mean.shape)
+           
+            
             x_hat = (x - self.avg_mean)/np.sqrt(self.avg_var + epsilon)
             return (self.gamma * x_hat) + self.beta
 
         self.x = x
 
         # Step1: Calculate the mini-batch mean
-        self.mean = np.mean(x, axis=1, keepdims=True)
+        self.mean = np.mean(x, axis=0, keepdims=True)
+        
 
         # Step2: calculate the mini-batch variance
-        self.var = np.var(x, axis=1, keepdims=True)
+        self.var = np.var(x, axis=0, keepdims=True)
 
         # Step3: Calculate the standard deviation
         self.std = np.sqrt(self.var + epsilon)
@@ -82,10 +87,13 @@ class BatchNormalization:
         # Step4: Normalize
         self.x_hat = (self.x - self.mean)/self.std
         self.avg_mean = self.momentum * self.avg_mean + (1 - self.momentum) * self.mean
+        #print("new avg mean",self.avg_mean.shape)
+
+
         self.avg_var = self.momentum * self.avg_var + (1 - self.momentum) * self.var
 
         # Step5: Scale and Shift
-        return (self.gamma * self.x_hat) + self.beta
+        return (self.x_hat * self.gamma ) + self.beta
 
     def backward(self, dx_norm):
         '''
@@ -97,18 +105,18 @@ class BatchNormalization:
         # Therefore, dx_hat = dx_norm * gamma
         dx_hat = dx_norm * self.gamma
 
-        m = self.x.shape[1]
+        m = self.x.shape[0]
         # dgamma = dx_norm * input_hat
         # dx_norm is (n_feature, m), X_hat is (n_feature, m)
         # where gamma is (n_feature, 1), sum the product along axis 1
-        self.dgamma = np.sum(dx_norm * self.x_hat, axis=1, keepdims=True)/m
+        self.dgamma = np.sum(dx_norm * self.x_hat, axis=0, keepdims=True)/m
         # the same applied to dbeta
-        self.dbeta = np.sum(dx_norm, axis=1, keepdims=True)/m
+        self.dbeta = np.sum(dx_norm, axis=0, keepdims=True)/m
 
         # The following derivations can be found in paper https://arxiv.org/pdf/1502.03167.pdf
-        dvar = np.sum(dx_hat * (self.x - self.mean), axis=1, keepdims=True) * ((self.std**-3)/-2)
+        dvar = np.sum(dx_hat * (self.x - self.mean), axis=0, keepdims=True) * ((self.std**-3)/-2)
 
-        dmean = np.sum(dx_hat * (-1/self.std), axis=1, keepdims=True) + dvar * np.sum(-2*(self.x - self.mean),
+        dmean = np.sum(dx_hat * (-1/self.std), axis=0, keepdims=True) + dvar * np.sum(-2*(self.x - self.mean),
                                                                                       axis=1, keepdims=True)/m
 
         dx = dx_hat/self.std + (dvar * (2*(self.x-self.mean)/m)) + dmean/m
