@@ -13,10 +13,12 @@ from .Optimizers import *
 from .WeightDecay import *
 from .BatchNormalization import *
 from .MiniBatchTraining import *
+from .MiniBatchTrainingV2 import *
+
 import numpy as np
 import time
 
-class Mlp:
+class MlpV2:
     """
     """
     # for initiallization, the code will create all layers automatically based on the provided parameters.  
@@ -64,6 +66,8 @@ class Mlp:
             self.regularizer = L1(lam)
         else:
             self.regularizer = None
+
+
            
     # if it is last layer, activation should be set to softmax and keep_prob should be set to 1
     def add_layer(self, n_in, n_out, activation, keep_prob):
@@ -150,25 +154,26 @@ class Mlp:
         """
         X = np.array(X)
         y = np.array(y)
-        to_return = np.zeros(epochs)
+        
+        self.batch = MiniBatchV2(X,y)
 
+        total_loss_train = []
+        total_accu_train = []
+                
         for k in range(epochs):
             time_start = time.time()
-            batches = self.batch.get_batch(X, y, self.batch_size)
-            loss = np.zeros(len(batches))
-            index = 0
-            for batch in batches:
-                X_b = np.array(batch[0])
-                Y_b = np.array(batch[1])
-                y_hat = self.forward(X_b)
-                batch_loss, delta = self.criterion_cross_entropy(Y_b, y_hat)
-                self.backward(delta)
-                self.update()
-                loss[index] = np.mean(batch_loss)
-                index += 1
-            to_return[k] = np.mean(loss)
-            print('Epoch:', k+1, ' Training Loss:', to_return[k], ' Time (sec):', time.time() - time_start)
-        return to_return
+            self.batch.fit(self, size = self.batch_size)
+            #get mean loss of all batch losses
+            #print(self.batch.loss)
+            mean_loss_train = np.mean(self.batch.getLoss())
+            mean_accu_train = np.mean(self.batch.getAccuracy())
+            total_loss_train.append(mean_loss_train)
+            total_accu_train.append(mean_accu_train)
+
+
+
+            print('Epoch:', k+1, ' Training Loss:', total_loss_train[k], ' Time (sec):', time.time() - time_start)
+        return np.array(total_loss_train)
 
     # define the prediction function
     # we can use predict function to predict the results of new data, by using the well-trained network.
