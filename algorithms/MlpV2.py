@@ -50,14 +50,15 @@ class MlpV2:
 
         # subsituted with set loss
         # self.criterion_loss = Loss(last_act, self.loss).cal_loss
-        if self.optimizer is not None and self.norm is not None:
-            self.norm.set_optimizer(self.optimizer.clone())
+        #if self.optimizer is not None and self.norm is not None:
+        #    self.norm.set_optimizer(self.optimizer.clone())
                       
     def set_momentum(self, beta):
         self.optimizer = GD_with_Momentum(beta)
     
     def set_batchNormalizer(self):
         self.norm = BatchNormalization()
+        self.norm.set_optimizer(self.optimizer.clone())
 
     def set_regularizer(self, lam, reg_type):
         if reg_type == "L2":
@@ -188,6 +189,13 @@ class MlpV2:
         for layer in self.layers:
             x = layer.forward(x, train_mode = False)#regularizer collect W during forward
         return x
+    
+    def evaluate(self,X ,y):
+        features = np.array(X)
+        prediction = self.predict(X)
+        prediction = np.argmax(prediction, 1)
+        acc = sum(prediction == np.argmax(y, 1))/len(y)
+        return acc
 
     def criterion_cross_entropy(self, y, y_hat):
         """
