@@ -68,7 +68,7 @@ class BatchNormalization:
         #print("old avg mean shape",self.avg_mean.shape)
         if not training:
            
-            
+            #self.avg_var = self.m/(self.m - 1)*self.avg_var
             x_hat = (x - self.avg_mean)/np.sqrt(self.avg_var + epsilon)
             return (self.gamma * x_hat) + self.beta
 
@@ -91,6 +91,7 @@ class BatchNormalization:
 
 
         self.avg_var = self.momentum * self.avg_var + (1 - self.momentum) * self.var
+        
 
         # Step5: Scale and Shift
         return (self.x_hat * self.gamma ) + self.beta
@@ -105,7 +106,7 @@ class BatchNormalization:
         # Therefore, dx_hat = dx_norm * gamma
         dx_hat = dx_norm * self.gamma
 
-        m = self.x.shape[0]
+        self.m = self.x.shape[0]
         # dgamma = dx_norm * input_hat
         # dx_norm is (n_feature, m), X_hat is (n_feature, m)
         # where gamma is (n_feature, 1), sum the product along axis 1
