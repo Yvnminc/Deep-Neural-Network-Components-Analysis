@@ -110,17 +110,17 @@ class BatchNormalization:
         # dgamma = dx_norm * input_hat
         # dx_norm is (n_feature, m), X_hat is (n_feature, m)
         # where gamma is (n_feature, 1), sum the product along axis 1
-        self.dgamma = np.sum(dx_norm * self.x_hat, axis=0, keepdims=True)/m
+        self.dgamma = np.sum(dx_norm * self.x_hat, axis=0, keepdims=True)/self.m
         # the same applied to dbeta
-        self.dbeta = np.sum(dx_norm, axis=0, keepdims=True)/m
+        self.dbeta = np.sum(dx_norm, axis=0, keepdims=True)/self.m
 
         # The following derivations can be found in paper https://arxiv.org/pdf/1502.03167.pdf
         dvar = np.sum(dx_hat * (self.x - self.mean), axis=0, keepdims=True) * ((self.std**-3)/-2)
 
         dmean = np.sum(dx_hat * (-1/self.std), axis=0, keepdims=True) + dvar * np.sum(-2*(self.x - self.mean),
-                                                                                      axis=1, keepdims=True)/m
+                                                                                      axis=1, keepdims=True)/self.m
 
-        dx = dx_hat/self.std + (dvar * (2*(self.x-self.mean)/m)) + dmean/m
+        dx = dx_hat/self.std + (dvar * (2*(self.x-self.mean)/self.m)) + dmean/self.m
         return dx
 
     def update(self, lr):
