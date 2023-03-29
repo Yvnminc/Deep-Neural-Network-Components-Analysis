@@ -26,6 +26,10 @@ class GD_with_Momentum:
         self.v_b = self.beta * self.v_b +  (1 - self.beta) * grad_b
         return W - lr * self.v_W, b - lr * self.v_b
 
+
+
+class Adam:
+    
    
 
 
