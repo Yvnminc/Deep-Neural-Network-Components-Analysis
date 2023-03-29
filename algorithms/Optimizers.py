@@ -6,7 +6,7 @@ if beta is set to 0 then it is standard gradient descent, otherwise it will be g
 descent with momentum.
 
 """
-
+import numpy as np
 
 class GD_with_Momentum:
     def __init__(self, beta = 0):
@@ -29,8 +29,46 @@ class GD_with_Momentum:
 
 
 class Adam:
-    
+    def __init__(self, beta1 = 0.9, beta2 = 0.9 ):
+        self.epsilon = 1e-12
+
+        self.beta1 = beta1
+        self.beta2 = beta2
+
+        self.vW = 0
+        self.mW = 0
+        self.vb = 0
+        self.mb = 0
+
+        self.t = 0
+
+    def clone(self):
+        return Adam(beta1 = self.beta1, beta2 = self.beta2)
+
+    def update(self, lr, W, b, grad_W, grad_b):
+
+        self.t+=1
+
+        self.mW = (self.beta1 * self.mW + (1 - self.beta1) * grad_W)
+        self.vW = (self.beta2 * self.vW + (1 - self.beta2) * (grad_W ** 2))
+        self.mb = (self.beta1 * self.mb + (1 - self.beta1) * grad_b)
+        self.vb = (self.beta2 * self.vb + (1 - self.beta2) * (grad_b) ** 2)
+
+        
+        mW_hat = self.mW/(1 - (self.beta1 ** self.t))
+        vW_hat = self.vW/(1 - (self.beta2 ** self.t))
+
+        mb_hat = self.mb/(1 - (self.beta1 ** self.t))
+        vb_hat = self.vb/(1 - (self.beta2 ** self.t))
+
+
+        return W - lr * (mW_hat/np.sqrt(vW_hat + self.epsilon)), b - lr * (mb_hat/np.sqrt(vb_hat + self.epsilon))
+
+
+
+        
+        
    
 
+            
 
-  

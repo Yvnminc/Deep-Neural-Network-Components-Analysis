@@ -53,11 +53,16 @@ class MlpV2:
         #if self.optimizer is not None and self.norm is not None:
         #    self.norm.set_optimizer(self.optimizer.clone())
                       
-    def set_momentum(self, beta):
-        self.optimizer = GD_with_Momentum(beta)
+    def set_optimiser(self, opt_type, params):
+        if opt_type == 'Momentum':
+            self.optimizer = GD_with_Momentum(params[0])
+        if opt_type == 'Adam':
+            self.optimizer = Adam(params[0],params[1])
+        else:
+            raise Exception("optimiser type not supported")
     
-    def set_batchNormalizer(self):
-        self.norm = BatchNormalization()
+    def set_batchNormalizer(self, momentum = 0.9):
+        self.norm = BatchNormalization(momentum=momentum)
         self.norm.set_optimizer(self.optimizer.clone())
 
     def set_regularizer(self, lam, reg_type):
