@@ -56,7 +56,7 @@ class MlpV2:
     def set_optimiser(self, opt_type, params):
         if opt_type == 'Momentum':
             self.optimizer = GD_with_Momentum(params[0])
-        if opt_type == 'Adam':
+        elif opt_type == 'Adam':
             self.optimizer = Adam(params[0],params[1])
         else:
             raise Exception("optimiser type not supported")
