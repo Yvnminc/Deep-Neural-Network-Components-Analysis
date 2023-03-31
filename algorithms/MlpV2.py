@@ -52,7 +52,8 @@ class MlpV2:
         # self.criterion_loss = Loss(last_act, self.loss).cal_loss
         #if self.optimizer is not None and self.norm is not None:
         #    self.norm.set_optimizer(self.optimizer.clone())
-                      
+    # 
+    # should always provide params as a list of atleast length 2                  
     def set_optimiser(self, opt_type, params):
         if opt_type == 'Momentum':
             self.optimizer = GD_with_Momentum(params[0])

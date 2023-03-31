@@ -75,7 +75,7 @@ class MiniBatchV2:
 
             mini_Y_hat = model.forward(mini_X, mode = True)
             if model.regularizer is not None:
-                self.loss.append( model.criterion_cross_entropy(mini_Y, mini_Y_hat)[0] + model.regularizer.get_reg_loss(self.m))
+                self.loss.append( model.criterion_cross_entropy(mini_Y, mini_Y_hat)[0] + model.regularizer.get_loss(self.m))
             else:
                 self.loss.append( model.criterion_cross_entropy(mini_Y, mini_Y_hat)[0])
             
