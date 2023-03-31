@@ -24,14 +24,22 @@ def set_batch(lrs, batchs):
     return nn_list, hyperparams
 
 # Define the activation experiment
-def set_act(acts):
+def set_exp(exps, exp_name = "activation"):
     nn_list = []
     hyperparams = []
 
-    for act in acts:
-        nn = set_nn(act = act)
+    for exp in exps:
+        match exp_name:
+            case "activation":
+                nn = set_nn(act = exp)
+            case "optimiser":
+                nn = set_nn(opt = exp)
+            case "structure":
+                nn = set_nn(structure = exp)
+            case "keep_prob":
+                nn = set_nn(keeprob = exp)
         nn_list.append(nn)
-        hyperparams.append([act])
+        hyperparams.append(exp)
     
     return nn_list, hyperparams
 
@@ -44,7 +52,6 @@ def set_nn(lr = 0.01, batch = 128, act = "relu", opt = ["Momentum", [0.9]],
     params = opt[1]
 
     # Set the structure
-    structure = [512, 256, 128, 64]
     last_layer = structure[-1]
 
     # Set the neural network

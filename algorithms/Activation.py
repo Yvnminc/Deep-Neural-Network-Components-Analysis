@@ -27,7 +27,7 @@ class Activation:
 
         f'(x) = 1 - tanh^2(x)
         '''
-        return 1 - np.tanh(a)**2
+        return 1 - np.square(a)
     
     # Logistic activation
     def __logistic(self, x):
@@ -49,7 +49,7 @@ class Activation:
 
         f'(x) = f(x) * (1 - f(x))
         '''
-        return self.__logistic(a) * (1.0 - self.__logistic(a))
+        return a * (1.0 - a)
     
     # Relu activation
     def __relu(self, x):
@@ -114,7 +114,7 @@ class Activation:
 
         f'(x) = 1 if x > 0 else f(x) + alpha
         '''
-        return (a > 0).astype(int) + (a <= 0).astype(int) * (self.__elu(a) + alpha)
+        return (a > 0).astype(int) + (a <= 0).astype(int) * (a + alpha)
     
     # GELU activation
     def __gelu(self, x, simple = True):
@@ -162,9 +162,9 @@ class Activation:
         Derivative of Swish function.
         Accroding to https://arxiv.org/pdf/1710.05941.pdf
 
-        f'(x) = beta * f(x) + x * beta * (1 - beta * f(x))
+        f'(x) = beta * swish(x) + sigmoid(beta * x) * (1 - swish(x))
         '''
-        return beta * self.__swish(a) + self.__logistic(beta * a) * (1 - beta * self.__swish(a))
+        return beta * a + 1  - beta * a
     
     # Softmax activation
     def __softmax(self, x):
