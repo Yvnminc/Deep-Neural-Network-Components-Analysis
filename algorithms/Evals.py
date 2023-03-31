@@ -10,7 +10,7 @@ from sklearn.metrics import precision_score, recall_score, f1_score
 import pandas as pd
 import numpy as np
 
-# Set batch and lr values
+# Define the batch size experiment
 def set_batch(lrs, batchs):
     nn_list = []
     hyperparams = []
@@ -23,23 +23,49 @@ def set_batch(lrs, batchs):
 
     return nn_list, hyperparams
 
-# Set the default values for the hyperparameters of the neural network
-def set_nn(lr = None, batch = None, act = None):
-    if lr == None:
-        lr = 0.01
-    if batch == None:
-        batch = 128
-    if act == None:
-        act = "relu"
+# Define the activation experiment
+def set_act(acts):
+    nn_list = []
+    hyperparams = []
 
+    for act in acts:
+        nn = set_nn(act = act)
+        nn_list.append(nn)
+        hyperparams.append([act])
+    
+    return nn_list, hyperparams
+
+# Set the default values for the hyperparameters of the neural network
+def set_nn(lr = 0.01, batch = 128, act = "relu", opt = ["Momentum", [0.9]],
+           bn = True, structure = [512, 256, 128, 64], keeprob = 1):
+    
+    # Set the optimiser
+    opt_type = opt[0]
+    params = opt[1]
+
+    # Set the structure
+    structure = [512, 256, 128, 64]
+    last_layer = structure[-1]
+
+    # Set the neural network
     nn = MlpV2(learning_rate = lr, batch_size=batch)
-    nn.set_optimiser(opt_type='Momentum', params = [0.9])
-    nn.set_batchNormalizer()
-    nn.add_layer(128,512,act,1)
-    nn.add_layer(512,256,act,1)
-    nn.add_layer(256,128,act,1)
-    nn.add_layer(128,64,act,1)
-    nn.add_layer(64,10,"softmax",1)
+
+    # Set the optimiser
+    nn.set_optimiser(opt_type= opt_type, params = params)
+
+    # Set batch normalizer
+    if bn == True:
+        nn.set_batchNormalizer()
+
+    # Add first layers
+    nn.add_layer(128,structure[0],act,keeprob)
+
+    # Add hidden layers
+    for i in range(len(structure)-1):
+        nn.add_layer(structure[i],structure[i+1],act,keeprob)
+
+    # Add last layer
+    nn.add_layer(last_layer,10,"softmax",keeprob)
     return nn
 
 # Run the experiment
