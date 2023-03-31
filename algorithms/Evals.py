@@ -29,15 +29,15 @@ def set_exp(exps, exp_name = "activation"):
     hyperparams = []
 
     for exp in exps:
-        match exp_name:
-            case "activation":
-                nn = set_nn(act = exp)
-            case "optimiser":
-                nn = set_nn(opt = exp)
-            case "structure":
-                nn = set_nn(structure = exp)
-            case "keep_prob":
-                nn = set_nn(keeprob = exp)
+        if exp_name == "activation":
+            nn = set_nn(act=exp)
+        elif exp_name == "optimiser":
+            nn = set_nn(opt=exp)
+        elif exp_name == "structure":
+            nn = set_nn(structure=exp)
+        elif exp_name == "keep_prob":
+            nn = set_nn(keeprob=exp)
+
         nn_list.append(nn)
         hyperparams.append(exp)
     
