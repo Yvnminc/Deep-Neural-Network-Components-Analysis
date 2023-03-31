@@ -165,7 +165,8 @@ class MlpV2:
 
         total_loss_train = []
         total_accu_train = []
-                
+        
+        total_time_start = time.time()
         for k in range(epochs):
             time_start = time.time()
             self.batch.fit(self, size = self.batch_size)
@@ -176,10 +177,11 @@ class MlpV2:
             total_loss_train.append(mean_loss_train)
             total_accu_train.append(mean_accu_train)
 
+            running_time = time.time() - time_start
+            print('Epoch:', k+1, ' Training Loss:', total_loss_train[k], ' Time (sec):', running_time)
 
-
-            print('Epoch:', k+1, ' Training Loss:', total_loss_train[k], ' Time (sec):', time.time() - time_start)
-        return np.array(total_loss_train)
+        total_time = time.time() - total_time_start
+        return np.array(total_loss_train), total_time
 
     # define the prediction function
     # we can use predict function to predict the results of new data, by using the well-trained network.

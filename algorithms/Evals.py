@@ -9,6 +9,7 @@ from .MlpV2 import MlpV2
 from sklearn.metrics import precision_score, recall_score, f1_score
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 
 # Define the batch size experiment
 def set_batch(lrs, batchs):
@@ -45,13 +46,15 @@ def set_exp(exps, exp_name = "activation"):
 
 # Set the default values for the hyperparameters of the neural network
 def set_nn(lr = 0.01, batch = 128, act = "relu", opt = ["Momentum", [0.9]],
-           bn = True, structure = [512, 256, 128, 64], keeprob = 1):
+           bn = True, structure = [512, 256, 128, 64, 10], keeprob = 1):
     
     # Set the optimiser
     opt_type = opt[0]
     params = opt[1]
 
     # Set the structure
+    first_layer = structure[0]
+    last_second_layer = structure[-2]
     last_layer = structure[-1]
 
     # Set the neural network
@@ -65,14 +68,14 @@ def set_nn(lr = 0.01, batch = 128, act = "relu", opt = ["Momentum", [0.9]],
         nn.set_batchNormalizer()
 
     # Add first layers
-    nn.add_layer(128,structure[0],act,keeprob)
+    nn.add_layer(128,first_layer,act,keeprob)
 
     # Add hidden layers
-    for i in range(len(structure)-1):
+    for i in range(len(structure)-2):
         nn.add_layer(structure[i],structure[i+1],act,keeprob)
 
     # Add last layer
-    nn.add_layer(last_layer,10,"softmax",keeprob)
+    nn.add_layer(last_second_layer,last_layer,"softmax",keeprob)
     return nn
 
 # Run the experiment
@@ -87,6 +90,7 @@ def run_exp(data = Data(), epochs = 5, hyperparams = None, nns = None):
     valid_recall = []
     train_f1 = []
     valid_f1 = []
+    times = []
 
     # Training and validation
     X_train = data.train_data
@@ -99,7 +103,7 @@ def run_exp(data = Data(), epochs = 5, hyperparams = None, nns = None):
     y_test = data.test_label
 
     for nn in nns:
-        train_loss = nn.fit(X_train, y_train, epochs= epochs)
+        train_loss,time = nn.fit(X_train, y_train, epochs= epochs)
         loss.append(train_loss)
 
         acc = nn.evaluate(X_train, y_train)
@@ -128,10 +132,29 @@ def run_exp(data = Data(), epochs = 5, hyperparams = None, nns = None):
         valid_precision.append(v_precision)
         valid_recall.append(v_recall)
         valid_f1.append(v_f1)
+        times.append(time)
     
-    eval_dict = {"loss": loss, "train_acc": train_acc, "valid_acc": valid_acc, "train_precision": train_precision, "valid_precision": valid_precision, "train_recall": train_recall, "valid_recall": valid_recall, "train_f1": train_f1, "valid_f1": valid_f1}
+    eval_dict = {"loss": loss, "train_acc": train_acc, "valid_acc": valid_acc, "train_precision": train_precision, "valid_precision": valid_precision, "train_recall": train_recall, "valid_recall": valid_recall, "train_f1": train_f1, "valid_f1": valid_f1, "times": times}
 
     eval_df = pd.DataFrame(eval_dict)
     eval_df.insert(0, "Hyperparameters", hyperparams, True)
 
     return eval_df
+
+# Draw the training and validation accuracy for different hyperparameters
+def plot_train_valid_acc_bar(eval_df):
+    '''
+    The training accuracy is represented by the blue bar
+    The validation accuracy is represented by the orange bar
+    '''
+    eval_df.plot(x="Hyperparameters", y=["train_acc", "valid_acc"], kind="bar")
+    plt.show()
+
+# Draw the training and validation accuracy for different hyperparameters
+def plot_train_valid_precision_bar(eval_df):
+    '''
+    The training precision is represented by the blue bar
+    The validation precision is represented by the orange bar
+    '''
+    eval_df.plot(x="Hyperparameters", y=["train_acc", "valid_acc"], kind="bar")
+    plt.show()
