@@ -103,7 +103,11 @@ class Activation:
 
         f(x) = x if x > 0 else alpha * (exp(x) - 1)
         '''
-        return np.maximum(alpha * (np.exp(x) - 1), x)
+
+        x = np.clip(x, -10, 10)
+        value = np.where(x > 0, x, alpha * (np.exp(x) - 1))
+        # print(value)
+        return value
     
     # Derivative of elu function
     def __elu_deriv(self, a, alpha=0.01):
