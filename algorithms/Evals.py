@@ -25,7 +25,7 @@ def set_batch(lrs, batchs):
     return nn_list, hyperparams
 
 # Define the activation experiment
-def set_exp(exps, exp_name = "activation"):
+def set_exp(exps, exp_name = "activation", deep = False):
     nn_list = []
     hyperparams = []
     exp_dict = {"exp_name": exp_name, "nn_list": nn_list, "hyperparams": hyperparams}
@@ -33,6 +33,9 @@ def set_exp(exps, exp_name = "activation"):
     for exp in exps:
         if exp_name == "activation":
             nn = set_nn(act=exp)
+            if deep == True:
+                nn = set_nn(act=exp, structure = [65, 60, 55, 50, 45, 40, 35, 30, 25, 20, 15, 10])
+
         elif exp_name == "optimiser":
             nn = set_nn(opt=exp)
         elif exp_name == "structure":
@@ -305,6 +308,9 @@ def plot_time_bar(eval_df, exp_name = "batch"):
 
     plt.ylabel('Time (s)')
     plt.savefig(f'visual_outputs/{exp_name}_times.png')
+
+    # Move the legend to dwon right
+    plt.legend(loc='lower right')
     plt.show()
 
 # Draw the training loss by epochs
