@@ -152,7 +152,7 @@ def run_exp(data = Data(), epochs = 5, exp_dict = None,
         plot_time_bar(eval_df, exp_name = exp_name)
         plot_loss_line(eval_df, exp_name = exp_name)
     return eval_df
-
+    
 # Draw the training and validation metrics for different hyperparameters
 def plot_train_valid_bar(eval_df, metric = "all", exp_name = "batch"):
     '''
@@ -161,46 +161,129 @@ def plot_train_valid_bar(eval_df, metric = "all", exp_name = "batch"):
     '''
     if metric == "accuracy":
         eval_df.plot(x="Hyperparameters", y=["train_acc", "valid_acc"], kind="bar")
+
+        # Assign value to the bar
+        for i in range(len(eval_df)):
+            plt.text(x = i-0.1 , y = eval_df["train_acc"][i] + 0.01, s = round(eval_df["train_acc"][i], 3), size = 10)
+            plt.text(x = i+0.1 , y = eval_df["valid_acc"][i] + 0.01, s = round(eval_df["valid_acc"][i], 3), size = 10)
         plt.ylabel("Accuracy")
-    
+
+        # Move the legend to dwon right
+        plt.legend(loc='lower right')
+
     if metric == "precision":
         eval_df.plot(x="Hyperparameters", y=["train_precision", "valid_precision"], kind="bar")
+
+        # Assign value to the bar
+        for i in range(len(eval_df)):
+            plt.text(x = i-0.1 , y = eval_df["train_precision"][i] + 0.01, s = round(eval_df["train_precision"][i], 3), size = 10)
+            plt.text(x = i+0.1 , y = eval_df["valid_precision"][i] + 0.01, s = round(eval_df["valid_precision"][i], 3), size = 10)
+
         plt.ylabel("Precision")
+
+        # Move the legend to dwon right
+        plt.legend(loc='lower right')
 
     if metric == "recall":
         eval_df.plot(x="Hyperparameters", y=["train_recall", "valid_recall"], kind="bar")
+
+        # Assign value to the bar
+        for i in range(len(eval_df)):
+            plt.text(x = i-0.1 , y = eval_df["train_recall"][i] + 0.01, s = round(eval_df["train_recall"][i], 3), size = 10)
+            plt.text(x = i+0.1 , y = eval_df["valid_recall"][i] + 0.01, s = round(eval_df["valid_recall"][i], 3), size = 10)
+
         plt.ylabel("Recall")
+
+        # Move the legend to dwon right
+        plt.legend(loc='lower right')
 
     if metric == "f1":
         eval_df.plot(x="Hyperparameters", y=["train_f1", "valid_f1"], kind="bar")
+
+        # Assign value to the bar
+        for i in range(len(eval_df)):
+            plt.text(x = i-0.2 , y = eval_df["train_f1"][i] + 0.01, s = round(eval_df["train_f1"][i], 3), size = 10)
+            plt.text(x = i+0.2 , y = eval_df["valid_f1"][i] + 0.01, s = round(eval_df["valid_f1"][i], 3), size = 10)
+
         plt.ylabel("F1")
+
+        # Move the legend to dwon right
+        plt.legend(loc='lower right')
 
     if metric == "all":
         # Plot the figure in (2 x 2) grid
-        fig, axs = plt.subplots(2, 2, figsize=(10, 10))
+        fig, axs = plt.subplots(2, 2, figsize=(15, 15))
         fig.suptitle('Metrics by different hyperparameters')
 
         # Plot accuracy
-        eval_df.plot(x="Hyperparameters", y=["train_acc", "valid_acc"], kind="bar", ax=axs[0, 0])
+        eval_df.plot(y=["train_acc", "valid_acc"], kind="bar", ax=axs[0, 0], x="Hyperparameters")
+
+        # Assign value to the bar
+        for i in range(len(eval_df)):
+            axs[0, 0].text(x = i - 0.25, y = eval_df["train_acc"][i], s = round(eval_df["train_acc"][i], 2), size = 10)
+            axs[0, 0].text(x = i + 0.05, y = eval_df["valid_acc"][i], s = round(eval_df["valid_acc"][i], 2), size = 10)
+
         axs[0, 0].set_title("Accuracy")
         axs[0, 0].set_ylabel("Accuracy")
+
+        # Remove the x label
+        axs[0, 0].set_xlabel("")
+
+        # Move the legend to dwon right
+        axs[0, 0].legend(loc='lower right')
         
         # Plot precision
-        eval_df.plot(x="Hyperparameters", y=["train_precision", "valid_precision"], kind="bar", ax=axs[0, 1])
+        eval_df.plot(y=["train_precision", "valid_precision"], kind="bar", ax=axs[0, 1], x="Hyperparameters")
+
+        # Assign value to the bar
+        for i in range(len(eval_df)):
+            axs[0, 1].text(x = i - 0.25, y = eval_df["train_precision"][i], s = round(eval_df["train_precision"][i], 2), size = 10)
+            axs[0, 1].text(x = i + 0.05, y = eval_df["valid_precision"][i], s = round(eval_df["valid_precision"][i], 2), size = 10)
+
         axs[0, 1].set_title("Precision")
         axs[0, 1].set_ylabel("Precision")
 
+        # Remove the x label
+        axs[0, 1].set_xlabel("")
+
+        # Move the legend to dwon right
+        axs[0, 1].legend(loc='lower right')
+
         # Plot recall
-        eval_df.plot(x="Hyperparameters", y=["train_recall", "valid_recall"], kind="bar", ax=axs[1, 0])
+        eval_df.plot(y=["train_recall", "valid_recall"], kind="bar", ax=axs[1, 0], x = "Hyperparameters")
+
+        # Assign value to the bar
+        for i in range(len(eval_df)):
+            axs[1, 0].text(x = i -0.25, y = eval_df["train_recall"][i], s = round(eval_df["train_recall"][i], 2), size = 10)
+            axs[1, 0].text(x = i + 0.05, y = eval_df["valid_recall"][i], s = round(eval_df["valid_recall"][i], 2), size = 10)
+
         axs[1, 0].set_title("Recall")
         axs[1, 0].set_ylabel("Recall")
 
+        # Remove the x label
+        axs[1, 0].set_xlabel("")
+
+        # Move the legend to dwon right
+        axs[1, 0].legend(loc='lower right')
+
         # Plot F1 score
-        eval_df.plot(x="Hyperparameters", y=["train_f1", "valid_f1"], kind="bar", ax=axs[1, 1])
+        eval_df.plot(y=["train_f1", "valid_f1"], kind="bar", ax=axs[1, 1], x = "Hyperparameters")
+
+        # Assign value to the bar with 1 decimal places
+        for i in range(len(eval_df)):
+            axs[1, 1].text(x = i-0.25 , y = eval_df["train_f1"][i], s = round(eval_df["train_f1"][i], 2), size = 10)
+            axs[1, 1].text(x = i+0.05 , y = eval_df["valid_f1"][i], s = round(eval_df["valid_f1"][i], 2), size = 10)
+
         axs[1, 1].set_title("F1 Score")
         axs[1, 1].set_ylabel("F1 Score")
+        
+        # Remove the x label
+        axs[1, 1].set_xlabel("")
 
-        # Adjust layout
+        # Move the legend to dwon right
+        axs[1, 1].legend(loc='lower right')
+
+        # Adjust layout to avoid overlapping the texts
         plt.tight_layout()
         fig.subplots_adjust(top=0.90)
 
@@ -215,6 +298,10 @@ def plot_time_bar(eval_df, exp_name = "batch"):
     Plot the time by different hyperparameters in bar chart
     '''
     eval_df.plot(x="Hyperparameters", y=["times"], kind="bar")
+
+    # Assign value to the bar
+    for i in range(len(eval_df)):
+        plt.text(x = i - 0.2, y = eval_df["times"][i] + 0.05, s = round(eval_df["times"][i], 3), size = 10)
 
     plt.ylabel('Time (s)')
     plt.savefig(f'visual_outputs/{exp_name}_times.png')
