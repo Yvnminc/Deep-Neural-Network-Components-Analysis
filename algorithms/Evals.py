@@ -2,7 +2,7 @@
 File name: Evals.py
 Authors: Yanming Guo
 Description: Set up the experiment and run the experiments with sklearn metrics.
-             The output of the experiment is a dataframe.
+             The output of the experiment is a dataframe and visualisations.
 """
 from .Data import Data
 from .MlpV2 import MlpV2
@@ -28,6 +28,7 @@ def set_batch(lrs, batchs):
 def set_exp(exps, exp_name = "activation"):
     nn_list = []
     hyperparams = []
+    exp_dict = {"exp_name": exp_name, "nn_list": nn_list, "hyperparams": hyperparams}
 
     for exp in exps:
         if exp_name == "activation":
@@ -42,12 +43,14 @@ def set_exp(exps, exp_name = "activation"):
         nn_list.append(nn)
         hyperparams.append(exp)
     
-    return nn_list, hyperparams
+    return exp_dict
 
 # Set the default values for the hyperparameters of the neural network
 def set_nn(lr = 0.01, batch = 128, act = "relu", opt = ["Momentum", [0.9]],
            bn = True, structure = [512, 256, 128, 64, 10], keeprob = 1):
-    
+    '''
+    Set the neural network with the given hyperparameters.
+    '''
     # Set the optimiser
     opt_type = opt[0]
     params = opt[1]
@@ -79,7 +82,15 @@ def set_nn(lr = 0.01, batch = 128, act = "relu", opt = ["Momentum", [0.9]],
     return nn
 
 # Run the experiment
-def run_exp(data = Data(), epochs = 5, hyperparams = None, nns = None):
+def run_exp(data = Data(), epochs = 5, exp_dict = None,
+            plot = True, metric = "all"):
+    '''
+    Run the experiment with the given hyperparameters and neural networks.
+    '''
+    nns = exp_dict["nn_list"]
+    hyperparams = exp_dict["hyperparams"]
+    exp_name = exp_dict["exp_name"]
+
     # Metrics
     loss = []
     train_acc = []
@@ -98,11 +109,8 @@ def run_exp(data = Data(), epochs = 5, hyperparams = None, nns = None):
     X_valid = data.validation_data
     y_valid = data.validation_label
 
-    # Testing
-    X_test = data.test_data
-    y_test = data.test_label
-
-    for nn in nns:
+    for nn, hyperparam in zip(nns, hyperparams):
+        print(f"-----------------Running: {hyperparam}----------------------")
         train_loss,time = nn.fit(X_train, y_train, epochs= epochs)
         loss.append(train_loss)
 
@@ -139,22 +147,98 @@ def run_exp(data = Data(), epochs = 5, hyperparams = None, nns = None):
     eval_df = pd.DataFrame(eval_dict)
     eval_df.insert(0, "Hyperparameters", hyperparams, True)
 
+    if plot == True:
+        plot_train_valid_bar(eval_df, metric = metric, exp_name = exp_name)
+        plot_time_bar(eval_df, exp_name = exp_name)
+        plot_loss_line(eval_df, exp_name = exp_name)
     return eval_df
 
-# Draw the training and validation accuracy for different hyperparameters
-def plot_train_valid_acc_bar(eval_df):
+# Draw the training and validation metrics for different hyperparameters
+def plot_train_valid_bar(eval_df, metric = "all", exp_name = "batch"):
     '''
-    The training accuracy is represented by the blue bar
-    The validation accuracy is represented by the orange bar
+    The training metric is represented by the blue bar
+    The validation metric is represented by the orange bar
     '''
-    eval_df.plot(x="Hyperparameters", y=["train_acc", "valid_acc"], kind="bar")
+    if metric == "accuracy":
+        eval_df.plot(x="Hyperparameters", y=["train_acc", "valid_acc"], kind="bar")
+        plt.ylabel("Accuracy")
+    
+    if metric == "precision":
+        eval_df.plot(x="Hyperparameters", y=["train_precision", "valid_precision"], kind="bar")
+        plt.ylabel("Precision")
+
+    if metric == "recall":
+        eval_df.plot(x="Hyperparameters", y=["train_recall", "valid_recall"], kind="bar")
+        plt.ylabel("Recall")
+
+    if metric == "f1":
+        eval_df.plot(x="Hyperparameters", y=["train_f1", "valid_f1"], kind="bar")
+        plt.ylabel("F1")
+
+    if metric == "all":
+        # Plot the figure in (2 x 2) grid
+        fig, axs = plt.subplots(2, 2, figsize=(10, 10))
+        fig.suptitle('Metrics by different hyperparameters')
+
+        # Plot accuracy
+        eval_df.plot(x="Hyperparameters", y=["train_acc", "valid_acc"], kind="bar", ax=axs[0, 0])
+        axs[0, 0].set_title("Accuracy")
+        axs[0, 0].set_ylabel("Accuracy")
+        
+        # Plot precision
+        eval_df.plot(x="Hyperparameters", y=["train_precision", "valid_precision"], kind="bar", ax=axs[0, 1])
+        axs[0, 1].set_title("Precision")
+        axs[0, 1].set_ylabel("Precision")
+
+        # Plot recall
+        eval_df.plot(x="Hyperparameters", y=["train_recall", "valid_recall"], kind="bar", ax=axs[1, 0])
+        axs[1, 0].set_title("Recall")
+        axs[1, 0].set_ylabel("Recall")
+
+        # Plot F1 score
+        eval_df.plot(x="Hyperparameters", y=["train_f1", "valid_f1"], kind="bar", ax=axs[1, 1])
+        axs[1, 1].set_title("F1 Score")
+        axs[1, 1].set_ylabel("F1 Score")
+
+        # Adjust layout
+        plt.tight_layout()
+        fig.subplots_adjust(top=0.90)
+
+
+    plt.savefig(f'visual_outputs/{exp_name}_{metric}.png')
+    plt.show()
+    
+
+# Draw time by different hyperparameters
+def plot_time_bar(eval_df, exp_name = "batch"):
+    '''
+    Plot the time by different hyperparameters in bar chart
+    '''
+    eval_df.plot(x="Hyperparameters", y=["times"], kind="bar")
+
+    plt.ylabel('Time (s)')
+    plt.savefig(f'visual_outputs/{exp_name}_times.png')
     plt.show()
 
-# Draw the training and validation accuracy for different hyperparameters
-def plot_train_valid_precision_bar(eval_df):
+# Draw the training loss by epochs
+def plot_loss_line(eval_df, exp_name = "batch"):
     '''
-    The training precision is represented by the blue bar
-    The validation precision is represented by the orange bar
+    Plot the training loss by epochs with different hyperparameters in line chart
     '''
-    eval_df.plot(x="Hyperparameters", y=["train_acc", "valid_acc"], kind="bar")
+    loss = eval_df["loss"]
+    hyperparams = eval_df["Hyperparameters"]
+
+    for hyperparam in range(len(hyperparams)):
+        plt.plot(loss[hyperparam],label=f'{hyperparams[hyperparam]}')
+
+    plt.legend()
+    plt.xlabel('Epoch Number')
+    plt.ylabel('Loss')
+    plt.savefig(f'visual_outputs/{exp_name}_loss.png')
     plt.show()
+
+def experiment(exp_para, exp_name, epochs = 10):
+    exp_dict = set_exp(exp_para, exp_name)
+    print(exp_dict)
+    exp_df = run_exp(exp_dict, epochs = epochs)
+    return exp_df
