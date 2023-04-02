@@ -66,13 +66,10 @@ class MlpV2:
         self.norm = BatchNormalization(momentum=momentum)
         self.norm.set_optimizer(self.optimizer.clone())
 
-    def set_regularizer(self, lam, reg_type):
-        if reg_type == "L2":
-            self.regularizer = L2(lam)
-        elif reg_type == "L1":
-            self.regularizer = L1(lam)
-        else:
-            self.regularizer = None
+    def set_regularizer(self, lam):
+
+        self.regularizer = L2(lam)
+       
 
 
            
