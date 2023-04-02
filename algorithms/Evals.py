@@ -34,7 +34,7 @@ def set_exp(exps, exp_name = "activation", deep = False):
         if exp_name == "activation":
             nn = set_nn(act=exp)
             if deep == True:
-                nn = set_nn(act=exp, structure = [65, 60, 55, 50, 45, 40, 35, 30, 25, 20, 15, 10])
+                nn = set_nn(act=exp, structure = [256, 128, 65, 60, 55, 50, 45, 40, 35, 30, 25, 20, 15, 10])
 
         elif exp_name == "optimiser":
             nn = set_nn(opt=exp)
