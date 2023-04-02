@@ -1,10 +1,10 @@
 """
 File name: data.py
-Authors: Yanming Guo
+Authors: Yanming Guo, Yongjiang Shi
 Description: Deal with the input data in npy format,
              also with some processing method.
 """
-
+from sklearn.preprocessing import StandardScaler
 import numpy as np
 import os
 
@@ -14,7 +14,7 @@ class Data:
   also with some processing method.
   '''
 
-  def __init__(self, path = "/Assignment1-Dataset", split_rate = 0.9):
+  def __init__(self, path = "/Assignment1-Dataset", split_rate = 0.8):
     os_path = os.getcwd()
     '''
     Read data from npy format.
@@ -31,10 +31,13 @@ class Data:
     y = np.load(train_label_path).flatten()
 
     self.train_validation_split(X, y, split_rate)
-    self.test_data = np.load(test_data_path)
+    self.test_data_unstandardized = np.load(test_data_path)
     self.test_label = np.load(test_label_path).flatten()
     
     self.one_hot()
+    self.standardization()
+
+
 
   def get_train_data(self):
     '''
@@ -47,6 +50,15 @@ class Data:
     self.validation_label = np.eye(np.max(self.validation_label)+1)[self.validation_label]
     self.test_label = np.eye(np.max(self.test_label)+1)[self.test_label]
 
+
+
+  def standardization(self):
+    scaler = StandardScaler()
+    self.train_data = scaler.fit_transform(self.train_data_unstandardized)
+    self.validation_data = scaler.transform(self.validation_data_unstandardized)
+    self.test_data = scaler.transform(self.test_data_unstandardized)
+
+
   def print_shapes(self):
     '''
     Print shapes
@@ -58,7 +70,7 @@ class Data:
     print(self.test_data.shape)
     print(self.test_label.shape)
 
-  def train_validation_split(self, X, y, rate = 0.9):
+  def train_validation_split(self, X, y, rate = 0.8):
       
       m = X.shape[0]
 
@@ -73,7 +85,7 @@ class Data:
       n_validation = m - n_train
 
       new_X, new_y = X[idx], y[idx]
-      self.train_data = new_X[:n_train]
+      self.train_data_unstandardized = new_X[:n_train]
       self.train_label = new_y[:n_train]
-      self.validation_data = new_X[-n_validation:]
+      self.validation_data_unstandardized = new_X[-n_validation:]
       self.validation_label = new_y[-n_validation:]
