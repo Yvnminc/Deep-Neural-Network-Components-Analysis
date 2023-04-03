@@ -174,9 +174,9 @@ class MlpV2:
             mean_accu_train = np.mean(self.batch.getAccuracy())
             total_loss_train.append(mean_loss_train)
             total_accu_train.append(mean_accu_train)
-
-            running_time = time.time() - time_start
-            print('Epoch:', k+1, ' Training Loss:', total_loss_train[k], ' Time (sec):', running_time)
+            if (k + 1) %5 == 0:
+                running_time = time.time() - time_start
+                print('Epoch:', k+1, ' Training Loss:', total_loss_train[k], ' Time (sec):', running_time)
 
         total_time = time.time() - total_time_start
         return np.array(total_loss_train), total_time
