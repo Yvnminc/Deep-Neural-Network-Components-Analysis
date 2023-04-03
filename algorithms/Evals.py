@@ -45,13 +45,15 @@ def set_exp(exps, exp_name = "activation", deep = False, bn = True):
                 nn = set_nn(act=exp, structure = [256, 128, 65, 60, 55, 50, 45, 40, 35, 30, 25, 20, 15, 10])
 
         elif exp_name == "optimiser":
-            nn = set_nn(opt=exp)
+            nn = set_nn(opt = exp, act = "leaky_relu")
         elif exp_name == "structure":
             nn = set_nn(structure=exp)
         elif exp_name == "keep_prob":
-            nn = set_nn(keeprob=exp)
+            nn = set_nn(keeprob=exp, opt = ["Adam", [0.9, 0.99]], act = "leaky_relu")
         elif exp_name == "batch_normalizer":
             nn = set_nn(bn=exp)
+        elif exp_name == "weight_decay":
+            nn = set_nn(weight_decay=exp, opt = ["Adam", [0.9, 0.99]], act = "leaky_relu")
 
         nn_list.append(nn)
         hyperparams.append(exp)
@@ -60,7 +62,7 @@ def set_exp(exps, exp_name = "activation", deep = False, bn = True):
 
 # Set the default values for the hyperparameters of the neural network
 def set_nn(lr = 0.01, batch = 128, act = "relu", opt = ["Momentum", [0.9, 0]],
-           bn = True, structure = [512, 256, 128, 64, 10], keeprob = 1):
+           bn = True, structure = [512, 256, 128, 64, 10], keeprob = 1, weight_decay = 0):
     '''
     Set the neural network with the given hyperparameters.
     '''
@@ -75,6 +77,10 @@ def set_nn(lr = 0.01, batch = 128, act = "relu", opt = ["Momentum", [0.9, 0]],
 
     # Set the neural network
     nn = MlpV2(learning_rate = lr, batch_size=batch)
+
+    # set the regularizer
+    if weight_decay > 0:
+        nn.set_regularizer(weight_decay)
 
     # Set the optimiser
     nn.set_optimiser(opt_type= opt_type, params = params)
@@ -91,7 +97,7 @@ def set_nn(lr = 0.01, batch = 128, act = "relu", opt = ["Momentum", [0.9, 0]],
         nn.add_layer(structure[i],structure[i+1],act,keeprob)
 
     # Add last layer
-    nn.add_layer(last_second_layer,last_layer,"softmax",keeprob)
+    nn.add_layer(last_second_layer,last_layer,"softmax",1)
     return nn
 
 # Run the experiment
