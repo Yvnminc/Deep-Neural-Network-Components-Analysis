@@ -25,7 +25,7 @@ def set_batch(lrs, batchs):
     return nn_list, hyperparams
 
 # Define the activation experiment
-def set_exp(exps, exp_name = "activation", deep = False):
+def set_exp(exps, exp_name = "activation", deep = False, bn = True):
     nn_list = []
     hyperparams = []
     exp_dict = {"exp_name": exp_name, "nn_list": nn_list, "hyperparams": hyperparams}
@@ -33,7 +33,7 @@ def set_exp(exps, exp_name = "activation", deep = False):
     if exp_name == "batch":
         for batch in exps[0]:
             for lr in exps[1]:
-                nn = set_nn(batch=batch, lr = lr)
+                nn = set_nn(batch=batch, lr = lr, bn = bn)
                 nn_list.append(nn)
                 hyperparams.append([lr, batch])
         return exp_dict
@@ -50,6 +50,8 @@ def set_exp(exps, exp_name = "activation", deep = False):
             nn = set_nn(structure=exp)
         elif exp_name == "keep_prob":
             nn = set_nn(keeprob=exp)
+        elif exp_name == "batch_normalizer":
+            nn = set_nn(bn=exp)
 
         nn_list.append(nn)
         hyperparams.append(exp)
