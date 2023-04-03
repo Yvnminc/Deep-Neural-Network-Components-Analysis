@@ -59,7 +59,7 @@ def set_exp(exps, exp_name = "activation", deep = False, bn = True):
     return exp_dict
 
 # Set the default values for the hyperparameters of the neural network
-def set_nn(lr = 0.01, batch = 128, act = "relu", opt = ["Momentum", [0.9]],
+def set_nn(lr = 0.01, batch = 128, act = "relu", opt = ["Momentum", [0.9, 0]],
            bn = True, structure = [512, 256, 128, 64, 10], keeprob = 1):
     '''
     Set the neural network with the given hyperparameters.
