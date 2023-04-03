@@ -30,6 +30,13 @@ def set_exp(exps, exp_name = "activation", deep = False):
     hyperparams = []
     exp_dict = {"exp_name": exp_name, "nn_list": nn_list, "hyperparams": hyperparams}
 
+    if exp_name == "batch":
+        for batch in exps[0]:
+            for lr in exps[1]:
+                nn = set_nn(batch=batch, lr = lr)
+                nn_list.append(nn)
+                hyperparams.append([lr, batch])
+
     for exp in exps:
         if exp_name == "activation":
             nn = set_nn(act=exp)
