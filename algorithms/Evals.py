@@ -30,6 +30,7 @@ def set_exp(exps, exp_name = "activation", deep = False, bn = True):
     hyperparams = []
     exp_dict = {"exp_name": exp_name, "nn_list": nn_list, "hyperparams": hyperparams}
 
+    opt_param_dict = {"SGD":("Momentum",[0,0]),"Momentum":("Momentum",[0.9,0.9]),"Adam":("Adam",[0.9,0.99])}
     if exp_name == "batch":
         for batch in exps[0]:
             for lr in exps[1]:
@@ -45,7 +46,8 @@ def set_exp(exps, exp_name = "activation", deep = False, bn = True):
                 nn = set_nn(act=exp, structure = [256, 128, 65, 60, 55, 50, 45, 40, 35, 30, 25, 20, 15, 10])
 
         elif exp_name == "optimiser":
-            nn = set_nn(opt = exp, act = "leaky_relu")
+            exp_param = opt_param_dict[exp]
+            nn = set_nn(opt = exp_param, act = "leaky_relu")
         elif exp_name == "structure":
             nn = set_nn(structure=exp)
         elif exp_name == "keep_prob":
