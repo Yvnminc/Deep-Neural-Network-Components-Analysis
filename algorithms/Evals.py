@@ -78,7 +78,7 @@ def set_nn(lr = 0.01, batch = 128, act = "relu", opt = ["Momentum", [0.9, 0]],
     last_layer = structure[-1]
 
     # Set the neural network
-    nn = MlpV2(learning_rate = lr, batch_size=batch)
+    nn = Mlp(learning_rate = lr, batch_size=batch)
 
     # set the regularizer
     if weight_decay > 0:
