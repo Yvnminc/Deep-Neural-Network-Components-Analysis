@@ -106,9 +106,6 @@ class Mlp:
         for layer in self.layers:
            layer.update(self.lr)
 
-    # update a batch of parameters
-    # def batch_update(self, dW, db):
-    #     return
 
     # get the gradients of each layer's parameters
     def get_grads(self):
@@ -151,7 +148,6 @@ class Mlp:
 
             # collect the loss and and other useful informations
             # you can collect other information (run time) you are interested in below and either return it as output or print it out
-
             mean_loss_train = np.mean(self.batch.getLoss())
             mean_acc_train = np.mean(self.batch.getAccuracy())
             total_loss_train.append(mean_loss_train)

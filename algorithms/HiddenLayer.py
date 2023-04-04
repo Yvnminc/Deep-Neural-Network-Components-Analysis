@@ -122,21 +122,17 @@ class HiddenLayer:
         # m should be the first dimension of the input
         m = self.input.shape[0]
 
-        # Calculate the dw for this layer,
-        # dw = dj/dz * dz/dw <- the input of this layer
-
+        # calculate the gradient of weights
         self.grad_W = np.dot( self.input.T,dz)/m
 
         # back propagate the regularization operation
         if regularizer is not None:
             self.grad_W = regularizer.backward(self.grad_W, self.W, m)
 
-        # db is the sum of row of delta
+        # calculate the gradient of bias term
         self.grad_b = np.sum(dz, axis = 0,keepdims = True)/m
        
-        # calculate da of this layers
-        # dz (m, out)
-        # W (in, out)
+        # calculate the gradient of activations
         dinput = np.dot(dz, self.W.T)
         return dinput
 
