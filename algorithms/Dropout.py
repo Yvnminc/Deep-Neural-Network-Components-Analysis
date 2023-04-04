@@ -7,9 +7,6 @@ was not been masked during the forward phase.
 
 """
 
-
-
-
 import numpy as np
 
 class Dropout:
@@ -44,10 +41,7 @@ class Dropout:
         return  A
           
 
-
-
     def backward(self, dA):
-      
         # multiply by the same drop out binary matrix in the forward pass
         dA = dA * self.mask 
         # scale by the keep probability

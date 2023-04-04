@@ -1,12 +1,9 @@
 """
 File name: Layer.py
 Authors: Yanming Guo, Yongjiang Shi, Jiacheng Zhang
-Description: Defines the layer operation of the nn.
+Description: Defines the layer class and its operation of the nn.
 Reference: Week 2 tut sheet of COMP5329 Deep Learning,
            University of Sydney
-
-           https://github.com/zhuqiangLu/COMP5329Assignment_1/blob/
-           bfdddc1cebf798e44f7b45baf7e26cbbbf19828c/Code/Algorithm/Layer.py#L119
 """
 import numpy as np
 from .Dropout import Dropout
@@ -17,25 +14,19 @@ class HiddenLayer:
 
     def __init__(self, n_in, n_out):
         '''
-        Typical hidden layer of a MLP: units are fully-connected and have
-        sigmoidal activation function. Weight matrix W is of shape (n_in,n_out)
+        Typical hidden layer of a MLP: units are fully-connected. Weight matrix W is of shape (n_in,n_out)
         and the bias vector b is of shape (n_out,).
         '''
-
-        # self.FC = FullyConnected(n_in, n_out)
-        # we randomly assign small values for the weights as the initiallization
+        # Randomly assign small values for the weights as the initiallization according to the Xavier Method
         self.W = np.random.uniform(
                 low=-np.sqrt(6. / (n_in + n_out)),
                 high=np.sqrt(6. / (n_in + n_out)),
                 size=(n_in, n_out)
         )
-        # if activation == 'logistic':
-        #     self.W *= 4
-
-        # we set the size of bias as the size of output dimension
         self.b = np.zeros(n_out,)
         
-        # we set he size of weight gradation as the size of weight
+
+        # We set the size of weight gradients' matrix the same size as the weights'
         self.grad_W = np.zeros(self.W.shape)
         self.grad_b = np.zeros(self.b.shape)
 
@@ -49,23 +40,18 @@ class HiddenLayer:
         self.a = None
         self.a_dropout = None
         
-        # dropout layer,not a prob
+        # note here the self.drop is a dropout object, not a saclar probability
         self.drop = None
         self.input = None
-        
-
-        
-        # activation deriv 
+    
         self.activation_deriv = None
-        
         self.batchNormalizer = None
-        # if activation_last_layer:
-        #    self.activation_deriv=Activation(activation_last_layer).f_deriv
+       
 
     def set_drop_out_layer(self, keep_prob):
         self.drop = Dropout(keep_prob)
 
-    # pass an optimizer object
+    # note need to pass an optimizer object
     def set_optimizer(self, optimizer):
         self.optimizer = optimizer
 
@@ -81,27 +67,24 @@ class HiddenLayer:
 
     def forward(self, input, train_mode=True, regularizer=None):
         '''
-        :type input: numpy.array
-        :param input: a symbolic tensor of shape (n_in,)
-        :mode: a string indicating if we are currently training, 
-        to indicate we are training , input "train"
+        Input:
+        input: a tensor containing the input/output from the previous layer
+        train_mode: boolean value indicating if we are in the training stage
         '''
         # number of instance
         self.m = input.shape[0]
-        #print("n_node", self.n_in)
-        #print("input",input.shape)
         self.input = input
-        self.z = np.dot(input, self.W) + self.b
-        #print("z",self.z.shape)
 
-        #print("w",self.W.shape)
+        # store linear combination
+        self.z = np.dot(input, self.W) + self.b
+
         # batch normalization
+        self.z_norm = self.z
+
         if self.batchNormalizer is not None:
             self.z_norm = self.batchNormalizer.forward(self.z, train_mode)
-        else:
-            self.z_norm = self.z
 
-        
+            
         self.a = self.activation(self.z_norm)
 
         if train_mode:
@@ -118,43 +101,47 @@ class HiddenLayer:
         if output_layer == True:
             dz = delta
         else:
+
+            # back propagate the dropout operation
             da = self.drop.backward(delta)
+
+            # back propagate the activation function using its derivative
             if self.activation is not None:
                 dz_norm = self.activation_deriv(self.a) * da
             else:
                 dz_norm = da
-                
+            
+            # back propagate the batch normalization operation
             if self.batchNormalizer is not None:
                 dz = self.batchNormalizer.backward(dz_norm)
             else:
                 dz = dz_norm
 
-        # first calculate the dw for this layer,
-        # dw = dj/dz * dz/dw <- the input of this layer
-        # m should be the first dimension of the input
-        m = self.input.shape[0]
         
 
+        # m should be the first dimension of the input
+        m = self.input.shape[0]
+
+        # Calculate the dw for this layer,
+        # dw = dj/dz * dz/dw <- the input of this layer
 
         self.grad_W = np.dot( self.input.T,dz)/m
 
+        # back propagate the regularization operation
         if regularizer is not None:
             self.grad_W = regularizer.backward(self.grad_W, self.W, m)
 
         # db is the sum of row of delta
-
         self.grad_b = np.sum(dz, axis = 0,keepdims = True)/m
        
         # calculate da of this layers
         # dz (m, out)
         # W (in, out)
-  
-
-
         dinput = np.dot(dz, self.W.T)
         return dinput
 
     def update(self, lr):
+        
         self.W, self.b = self.optimizer.update(lr, self.W, self.b, self.grad_W, self.grad_b)
     
         # update normalizer as well

@@ -9,9 +9,12 @@ import numpy as np
 class BatchNormalization:
     def __init__(self, momentum=0.9, optimizer=None):
         """
-        initialization of batch normalization
-        :param momentum: a hyperparameter that controls the momentum in gradient descent based optimization
-        :param optimizer: a specific optimization algorithm, e.g., SGD
+        Initialization of batch normalization
+        Input:
+        momentum: a hyperparameter that controls the momentum in gradient descent based optimization
+        optimizer: a specific optimizatizer object, e.g., SGD
+        
+        Attributes:
         m: the size of a mini-batch
         gamma: a parameter that scales the normalized value
         beta: a parameter that shifts the normalized value
@@ -43,6 +46,7 @@ class BatchNormalization:
     def set_optimizer(self, optimizer):
         self.optimizer = optimizer
 
+    # function that allows model to give each layer a copy of the batch object
     def clone(self):
         opt = None
         if self.optimizer is not None:
@@ -59,16 +63,13 @@ class BatchNormalization:
         '''
         Batch Nomalization Transform, applied to activation x over a mini-batch
         '''
+
+        # initialize the parameters in the first epoch for the first batch
         if self.gamma is None and self.beta is None:
-            # 改了这里， 因为是每个feature一个mean
             self.__init_param(x.shape[1])
 
-
-        #print("data shape",x.shape)
-        #print("old avg mean shape",self.avg_mean.shape)
+        # when inferencing, calculate the scale and shifted x
         if not training:
-           
-            #self.avg_var = self.m/(self.m - 1)*self.avg_var
             x_hat = (x - self.avg_mean)/np.sqrt(self.avg_var + epsilon)
             return (self.gamma * x_hat) + self.beta
 
@@ -76,9 +77,8 @@ class BatchNormalization:
 
         # Step1: Calculate the mini-batch mean
         self.mean = np.mean(x, axis=0, keepdims=True)
-        
-
-        # Step2: calculate the mini-batch variance
+    
+        # Step2: Calculate the mini-batch variance
         self.var = np.var(x, axis=0, keepdims=True)
 
         # Step3: Calculate the standard deviation
@@ -87,43 +87,34 @@ class BatchNormalization:
         # Step4: Normalize
         self.x_hat = (self.x - self.mean)/self.std
         self.avg_mean = self.momentum * self.avg_mean + (1 - self.momentum) * self.mean
-        #print("new avg mean",self.avg_mean.shape)
-
-
         self.avg_var = self.momentum * self.avg_var + (1 - self.momentum) * self.var
         
-
         # Step5: Scale and Shift
         return (self.x_hat * self.gamma ) + self.beta
 
     def backward(self, dx_norm):
         '''
-        During training we need to backpropagate the gradient of loss through batch normalization transformation,
-        as well as compute the gradients with respect to the parameters of the BN transform.
+        Compute the gradient foe the Batch Normalization parameter and while back propagating the loss 
         '''
-
-        # x_norm = gamma * X_hat + beta
-        # Therefore, dx_hat = dx_norm * gamma
+        # The following derivations can be found in paper https://arxiv.org/pdf/1502.03167.pdf
+        
         dx_hat = dx_norm * self.gamma
 
         self.m = self.x.shape[0]
-        # dgamma = dx_norm * input_hat
-        # dx_norm is (n_feature, m), X_hat is (n_feature, m)
-        # where gamma is (n_feature, 1), sum the product along axis 1
+
         self.dgamma = np.sum(dx_norm * self.x_hat, axis=0, keepdims=True)/self.m
-        # the same applied to dbeta
         self.dbeta = np.sum(dx_norm, axis=0, keepdims=True)/self.m
 
-        # The following derivations can be found in paper https://arxiv.org/pdf/1502.03167.pdf
         dvar = np.sum(dx_hat * (self.x - self.mean), axis=0, keepdims=True) * ((self.std**-3)/-2)
-
-        dmean = np.sum(dx_hat * (-1/self.std), axis=0, keepdims=True) + dvar * np.sum(-2*(self.x - self.mean),
-                                                                                      axis=1, keepdims=True)/self.m
+        dmean = np.sum(dx_hat * (-1/self.std), axis=0, keepdims=True) + dvar * np.sum(-2*(self.x - self.mean),axis=1, keepdims=True)/self.m
 
         dx = dx_hat/self.std + (dvar * (2*(self.x-self.mean)/self.m)) + dmean/self.m
         return dx
 
     def update(self, lr):
+        '''
+        update the weights according to optimizer's update rule
+        '''
         if self.optimizer is None:
             self.gamma = self.gamma - lr * self.dgamma
             self.beta = self.beta - lr * self.dbeta
