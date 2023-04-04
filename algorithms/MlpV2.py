@@ -167,7 +167,12 @@ class MlpV2:
         total_time_start = time.time()
         for k in range(epochs):
             time_start = time.time()
+            if self.regularizer is not None:
+                self.regularizer.reset()
+
             self.batch.fit(self, size = self.batch_size)
+
+            
             #get mean loss of all batch losses
             #print(self.batch.loss)
             mean_loss_train = np.mean(self.batch.getLoss())
