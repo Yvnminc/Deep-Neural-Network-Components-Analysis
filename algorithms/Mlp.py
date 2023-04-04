@@ -39,7 +39,7 @@ class Mlp:
         self.regularizer = None
         self.keep_prob = keep_prob
         self.norm = norm
-        self.batch = MiniBatch()
+        self.batch = None
         self.batch_size = batch_size
         self.n_out = 10
 
