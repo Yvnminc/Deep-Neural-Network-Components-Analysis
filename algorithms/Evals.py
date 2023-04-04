@@ -55,7 +55,7 @@ def set_exp(exps, exp_name = "activation", deep = False, bn = True):
         elif exp_name == "batch_normalizer":
             nn = set_nn(bn=exp)
         elif exp_name == "weight_decay":
-            nn = set_nn(weight_decay=exp, opt = ["Adam", [0.9, 0.99]], act = "leaky_relu")
+            nn = set_nn(weight_decay=exp, opt = ["Adam", [0.9, 0.99]], act = "leaky_relu", keeprob=0.8)
 
         nn_list.append(nn)
         hyperparams.append(exp)
