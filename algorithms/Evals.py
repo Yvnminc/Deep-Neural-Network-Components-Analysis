@@ -309,7 +309,7 @@ def plot_train_valid_bar(eval_df, metric = "all", exp_name = "batch"):
         fig.subplots_adjust(top=0.90)
 
 
-    plt.savefig(f'visual_outputs/{exp_name}_{metric}.png')
+    plt.savefig(f'../visual_outputs/{exp_name}_{metric}.png')
     plt.show()
     
 
@@ -325,7 +325,7 @@ def plot_time_bar(eval_df, exp_name = "batch"):
         plt.text(x = i - 0.2, y = eval_df["times"][i] + 0.05, s = round(eval_df["times"][i], 3), size = 10)
 
     plt.ylabel('Time (s)')
-    plt.savefig(f'visual_outputs/{exp_name}_times.png')
+    plt.savefig(f'../visual_outputs/{exp_name}_times.png')
 
     # Move the legend to dwon right
     plt.legend(loc='lower right')
@@ -345,7 +345,7 @@ def plot_loss_line(eval_df, exp_name = "batch"):
     plt.legend()
     plt.xlabel('Epoch Number')
     plt.ylabel('Loss')
-    plt.savefig(f'visual_outputs/{exp_name}_loss.png')
+    plt.savefig(f'../visual_outputs/{exp_name}_loss.png')
     plt.show()
 
 def experiment(exp_para, exp_name, epochs = 10):

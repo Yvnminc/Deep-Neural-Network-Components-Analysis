@@ -15,16 +15,15 @@ class Data:
   '''
 
   def __init__(self, path = "/Assignment1-Dataset", split_rate = 0.8):
-    os_path = os.getcwd()
     '''
     Read data from npy format.
     '''
 
     # Config the data path
-    train_data_path = os_path + path + '/train_data.npy'
-    train_label_path = os_path + path + '/train_label.npy'
-    test_data_path = os_path + path + '/test_data.npy'
-    test_label_path = os_path + path + '/test_label.npy'
+    train_data_path = '../' + path + '/train_data.npy'
+    train_label_path = '../' + path + '/train_label.npy'
+    test_data_path = '../' + path + '/test_data.npy'
+    test_label_path = '../' + path + '/test_label.npy'
 
     # Assignments
     X = np.load(train_data_path)
