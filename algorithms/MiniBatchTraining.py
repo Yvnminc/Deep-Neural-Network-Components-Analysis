@@ -8,24 +8,84 @@ Reference: Week 2 tut sheet of COMP5329 Deep Learning,
 import numpy as np
 
 class MiniBatch:
+    def __init__(self, X, Y):
+        #assume X is of the shape (n_features, n_example)
+        #Y is of the shape (n_classes, n_example)
+        self.x_features = X.shape[1]
+        self.y_classes = Y.shape[1]
+        self.m = X.shape[0]
+        self.map = np.concatenate([X, Y], axis=1)
+        self.loss = []
+        self.accuracy = []
 
-    def get_batch(self, X, y, batch_size):
-        """
-        Divide data into batches.
-        :param X: Input data or features, assume with shape (n_examples, n_features)
-        :param Y: Input targets, assume with the shape (n_example, n_classes)
-        :param batch_size: a hyperparameter that defines the size of a batch
-        """
-        mini_batches = []
-        n_features = X.shape[1]
-        data = np.concatenate((X, y), axis=1)
-        np.random.shuffle(data)
+    def shuffle(self, boo = True):
 
-        num_batches = X.shape[0] // batch_size
-        for i in range(num_batches):
-            mini_batch = data[i * batch_size:(i + 1) * batch_size]
-            mini_batches.append((mini_batch[:, :n_features], mini_batch[:, n_features:]))
-        # if X.shape[0] % batch_size != 0:
-        #     mini_batch = data[(i + 1) * batch_size:]
-        #     mini_batches.append((mini_batch[:, :n_features], mini_batch[:, n_features:]))
-        return mini_batches
+        #shuffle only shuffles the array along the first axis
+        #must reshape map first
+       
+        np.random.shuffle(self.map)
+        
+
+
+
+    def getX(self):
+        return self.map[:, :self.x_features]
+
+    def getY(self):
+        return self.map[:, self.x_features:]
+
+    def getLoss(self):
+        return self.loss
+
+    def getAccuracy(self):
+        return self.accuracy
+
+
+
+    def reset(self):
+        self.loss = []
+        self.accuracy = []
+
+
+
+    def fit(self, model, size = None):
+        #reset loss and accuracy
+        self.reset()
+
+        #if batch size is not given then use one batch per epoch
+        if(size == None):
+            size = self.m
+
+        #shuffle
+        self.shuffle()
+
+        #get the number of batch, X  and Y
+        batch_num = self.m//size
+        shuff_X = self.getX()
+        shuff_Y = self.getY()
+
+        for i in range(batch_num):
+
+
+            start = i * size
+            end = start + size
+            mini_X = shuff_X[start:end,:]
+            mini_Y = shuff_Y[start:end,:]
+
+
+            mini_Y_hat = model.forward(mini_X, mode = True)
+            if model.regularizer is not None:
+                self.loss.append( model.criterion_cross_entropy(mini_Y, mini_Y_hat)[0] + model.regularizer.get_loss(self.m))
+            else:
+                self.loss.append( model.criterion_cross_entropy(mini_Y, mini_Y_hat)[0])
+            
+            #print(self.loss)
+
+            
+
+            #compute accuracy for this mini batch
+            self.accuracy.append(np.mean( np.equal(np.argmax(mini_Y, 1), np.argmax(mini_Y_hat, 1))))
+
+            mini_dz = mini_Y_hat - mini_Y
+            model.backward(mini_dz)
+            model.update()

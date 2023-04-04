@@ -5,7 +5,7 @@ Description: Set up the experiment and run the experiments with sklearn metrics.
              The output of the experiment is a dataframe and visualisations.
 """
 from .Data import Data
-from .MlpV2 import MlpV2
+from .Mlp import Mlp
 from sklearn.metrics import precision_score, recall_score, f1_score
 import pandas as pd
 import numpy as np

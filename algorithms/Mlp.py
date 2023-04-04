@@ -13,6 +13,8 @@ from .Optimizers import *
 from .WeightDecay import *
 from .BatchNormalization import *
 from .MiniBatchTraining import *
+
+
 import numpy as np
 import time
 
@@ -48,22 +50,28 @@ class Mlp:
 
         # subsituted with set loss
         # self.criterion_loss = Loss(last_act, self.loss).cal_loss
-        if self.optimizer is not None and self.norm is not None:
-            self.norm.set_optimizer(self.optimizer.clone())
-                      
-    def set_momentum(self, beta):
-        self.optimizer = GD_with_Momentum(beta)
-    
-    def set_batchNormalizer(self):
-        self.norm = BatchNormalization()
-
-    def set_regularizer(self, lam, reg_type):
-        if reg_type == "L2":
-            self.regularizer = L2(lam)
-        elif reg_type == "L1":
-            self.regularizer = L1(lam)
+        #if self.optimizer is not None and self.norm is not None:
+        #    self.norm.set_optimizer(self.optimizer.clone())
+    # 
+    # should always provide params as a list of atleast length 2                  
+    def set_optimiser(self, opt_type, params):
+        if opt_type == 'Momentum':
+            self.optimizer = GD_with_Momentum(params[0])
+        elif opt_type == 'Adam':
+            self.optimizer = Adam(params[0],params[1])
         else:
-            self.regularizer = None
+            raise Exception("optimiser type not supported")
+    
+    def set_batchNormalizer(self, momentum = 0.9):
+        self.norm = BatchNormalization(momentum=momentum)
+        self.norm.set_optimizer(self.optimizer.clone())
+
+    def set_regularizer(self, lam):
+
+        self.regularizer = L2(lam)
+       
+
+
            
     # if it is last layer, activation should be set to softmax and keep_prob should be set to 1
     def add_layer(self, n_in, n_out, activation, keep_prob):
@@ -150,25 +158,33 @@ class Mlp:
         """
         X = np.array(X)
         y = np.array(y)
-        to_return = np.zeros(epochs)
+        
+        self.batch = MiniBatch(X,y)
 
+        total_loss_train = []
+        total_accu_train = []
+        
+        total_time_start = time.time()
         for k in range(epochs):
             time_start = time.time()
-            batches = self.batch.get_batch(X, y, self.batch_size)
-            loss = np.zeros(len(batches))
-            index = 0
-            for batch in batches:
-                X_b = np.array(batch[0])
-                Y_b = np.array(batch[1])
-                y_hat = self.forward(X_b)
-                batch_loss, delta = self.criterion_cross_entropy(Y_b, y_hat)
-                self.backward(delta)
-                self.update()
-                loss[index] = np.mean(batch_loss)
-                index += 1
-            to_return[k] = np.mean(loss)
-            print('Epoch:', k+1, ' Training Loss:', to_return[k], ' Time (sec):', time.time() - time_start)
-        return to_return
+            if self.regularizer is not None:
+                self.regularizer.reset()
+
+            self.batch.fit(self, size = self.batch_size)
+
+            
+            #get mean loss of all batch losses
+            #print(self.batch.loss)
+            mean_loss_train = np.mean(self.batch.getLoss())
+            mean_accu_train = np.mean(self.batch.getAccuracy())
+            total_loss_train.append(mean_loss_train)
+            total_accu_train.append(mean_accu_train)
+            if (k + 1) %5 == 0:
+                running_time = time.time() - time_start
+                print('Epoch:', k+1, ' Training Loss:', total_loss_train[k], ' Time (sec) per epoch:', running_time)
+
+        total_time = time.time() - total_time_start
+        return np.array(total_loss_train), total_time
 
     # define the prediction function
     # we can use predict function to predict the results of new data, by using the well-trained network.
@@ -183,6 +199,13 @@ class Mlp:
         for layer in self.layers:
             x = layer.forward(x, train_mode = False)#regularizer collect W during forward
         return x
+    
+    def evaluate(self,X ,y):
+        features = np.array(X)
+        prediction = self.predict(X)
+        prediction = np.argmax(prediction, 1)
+        acc = sum(prediction == np.argmax(y, 1))/len(y)
+        return acc
 
     def criterion_cross_entropy(self, y, y_hat):
         """
