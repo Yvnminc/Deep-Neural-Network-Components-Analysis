@@ -1,9 +1,7 @@
 """
 File name: WeightDecay.py
 Authors: Yongjiang Shi
-Description: Defines the regularizer (L2) that could been used for the model. 
-
-
+Description: Defines the regularizer (L2) that could been used for the model as weight decay term. 
 """
 
 import numpy as np
@@ -17,8 +15,8 @@ class L2:
         self.loss = 0
 
     def forward(self, W):
-        self.loss += np.sum(np.square(W))
-        
+        # accumalate the square of weights during the forward pass 
+        self.loss += np.sum(np.square(W))      
     
     def get_loss(self, m):
         return self.loss * (self.lamda/(2*m))

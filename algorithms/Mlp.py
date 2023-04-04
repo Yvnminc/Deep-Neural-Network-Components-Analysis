@@ -20,20 +20,24 @@ import time
 
 class Mlp:
     """
+    The Neural Network class that enables forward pass, back propagation, construction of a neural network and 
+    method such as fit, predict and evaluate.
+    It work similar to tensorflow to a extent.
     """
-    # for initiallization, the code will create all layers automatically based on the provided parameters.  
-    # can we set all initilization parameter with a set_para method?   
+
     def __init__(self, learning_rate=0.1, batch_size=1, keep_prob=1, norm=None):
         """
-        :param layers: A list containing the number of units in each layer.
-        Should be at least two values
-        :param activation: The activation function to be used. Can be
-        "logistic" or "tanh"
+        For initilisation, we need some general information about the neural network
+        such as learning rate, batch size , universal dropout rate (we use its complement)
+        and whether we are using batch normalization
         """        
-        ### initialize layers
+
+        # initialize layer container
         self.layers=[]
-        #need to add training data size to index 0 in dims
+
+        # dimension container
         self.dims = []
+
         self.lr = learning_rate
         self.optimizer = None
         self.regularizer = None
@@ -42,18 +46,7 @@ class Mlp:
         self.batch = None
         self.batch_size = batch_size
         self.n_out = 10
-
-        # activation should be controled at layer level
-        #self.activation = activation
-        #last_act = self.activation[-1]
-        #print(self.activation[-1])
-
-        # subsituted with set loss
-        # self.criterion_loss = Loss(last_act, self.loss).cal_loss
-        #if self.optimizer is not None and self.norm is not None:
-        #    self.norm.set_optimizer(self.optimizer.clone())
-    # 
-    # should always provide params as a list of atleast length 2                  
+                
     def set_optimiser(self, opt_type, params):
         if opt_type == 'Momentum':
             self.optimizer = GD_with_Momentum(params[0])
@@ -67,12 +60,8 @@ class Mlp:
         self.norm.set_optimizer(self.optimizer.clone())
 
     def set_regularizer(self, lam):
-
         self.regularizer = L2(lam)
        
-
-
-           
     # if it is last layer, activation should be set to softmax and keep_prob should be set to 1
     def add_layer(self, n_in, n_out, activation, keep_prob):
         layer = HiddenLayer(n_in, n_out)
@@ -98,31 +87,20 @@ class Mlp:
             self.regularizer.reset()   
            
         for layer in self.layers:
-            #print(input.shape)
             output = layer.forward(input, regularizer=self.regularizer, train_mode=mode)
             input = output
         return output
 
-    # define the objection/loss function, we use mean sqaure error (MSE) as the loss
-    # you can try other loss, such as cross entropy.
-    # when you try to change the loss, you should also consider the backward formula for the new loss as well!
-    #def criterion_MSE(self,y,y_hat):
-    #   activation_deriv=Activation(self.activation[-1]).f_deriv
-    #    # MSE
-    #    error = y-y_hat
-    #   loss=error**2
-    #    # calculate the MSE's delta of the output layer
-    #    delta=-error*activation_deriv(y_hat)    
-    #    # return loss and delta
-    #   return loss,delta
-
     # backward progress  
     def backward(self, delta):
+        # get the back propagation error term for the last layer
         delta = self.layers[-1].backward(delta, output_layer=True, regularizer=self.regularizer)
+
+        # propagate backwards for other layers
         for layer in reversed(self.layers[:-1]):
             delta=layer.backward(delta, regularizer=self.regularizer)
 
-    # update the network weights after backward.
+    # update the network weights after back propagation
     # make sure you run the backward function before the update function!    
     def update(self):
         for layer in self.layers:
@@ -145,16 +123,14 @@ class Mlp:
         return layer_grad_W, layer_grad_b
 
     # define the training function
-    # it will return all losses within the whole training process.
+    # it will return all losses during the whole training process.
     def fit(self, X, y, epochs):
         """
-        mini-batch trainnig process.
-        :param X: Input data or features, assume with shape (n_features, n_examples)
-        :param Y: Input targets, assume with the shape (n_classes, n_example)
-        :param lr: a hyperparameter that defines the speed of learning (i.e., learning rate)
-        :param epochs: a hyperparameter that defines number of times the dataset is presented to the network for learning
-        :param batch_size: a hyperparameter that defines the size of a batch
-        :param momentum: a hyperparameter that controls the momentum in gradient descent based optimization
+        mini-batch training process.
+        Input:
+        X: Features with shape (n_example, n_feature)
+        Y: Labels with the shape (n_example, n_classes)
+        epochs: number of iteration the model trains on the data
         """
         X = np.array(X)
         y = np.array(y)
@@ -162,9 +138,10 @@ class Mlp:
         self.batch = MiniBatch(X,y)
 
         total_loss_train = []
-        total_accu_train = []
+        total_acc_train = []
         
         total_time_start = time.time()
+
         for k in range(epochs):
             time_start = time.time()
             if self.regularizer is not None:
@@ -172,13 +149,15 @@ class Mlp:
 
             self.batch.fit(self, size = self.batch_size)
 
-            
-            #get mean loss of all batch losses
-            #print(self.batch.loss)
+            # collect the loss and and other useful informations
+            # you can collect other information (run time) you are interested in below and either return it as output or print it out
+
             mean_loss_train = np.mean(self.batch.getLoss())
-            mean_accu_train = np.mean(self.batch.getAccuracy())
+            mean_acc_train = np.mean(self.batch.getAccuracy())
             total_loss_train.append(mean_loss_train)
-            total_accu_train.append(mean_accu_train)
+            total_acc_train.append(mean_acc_train)
+
+            # printing Training Loss every 5 epochs to observe convergence 
             if (k + 1) %5 == 0:
                 running_time = time.time() - time_start
                 print('Epoch:', k+1, ' Training Loss:', total_loss_train[k], ' Time (sec) per epoch:', running_time)
@@ -188,20 +167,14 @@ class Mlp:
 
     # define the prediction function
     # we can use predict function to predict the results of new data, by using the well-trained network.
-    # def predict(self, x):
-    #     x = np.array(x)
-    #     output = np.zeros(x.shape[0])
-    #     for i in np.arange(x.shape[0]):
-    #         output[i] = self.forward(x[i,:], mode=False)
-    #     return output
     def predict(self, x):
         x = np.array(x)
         for layer in self.layers:
-            x = layer.forward(x, train_mode = False)#regularizer collect W during forward
+            x = layer.forward(x, train_mode = False)
         return x
     
+    # given test feature and y_true, return accuracy of the model
     def evaluate(self,X ,y):
-        features = np.array(X)
         prediction = self.predict(X)
         prediction = np.argmax(prediction, 1)
         acc = sum(prediction == np.argmax(y, 1))/len(y)
@@ -221,7 +194,8 @@ class Mlp:
         loss = - np.sum(np.multiply(y, np.log(y_hat)))/batch_size
     
         # derivative of cross entropy with softmax
-        # self.layers[-1] is the activation function
+        # self.layers[-1] is the last layer
         delta = self.layers[-1].activation_deriv(y, y_hat)
+        
         # return loss and delta
         return loss, delta
