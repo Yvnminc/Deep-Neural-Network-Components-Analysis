@@ -1,4 +1,3 @@
-```markdown
 # Deep Learning Framework Study
 
 Deep learning is a powerful tool for solving complex tasks, such as image recognition, text semantic understanding, and cross-discipline problems like medical diagnosis. These phenomena drive the study of deep learning frameworks to become essential foundations for future education and attract research interest from various domains.
@@ -22,8 +21,7 @@ This comprehensive, survey-like modularity study decomposes the complex deep neu
 With comprehensive experiments, we aim to better understand the intrinsic nature of deep learning models, their limitations, and possible improvements. **The contribution of this survey is to provide a detailed explanation with intuitive visualizations covering most parts of the deep learning framework, aimed at mitigating the difficulty for new researchers entering the deep learning field**.
 
 ## Paper Structure
-Our paper is organized as follows:
+Please see more detail and analysis in our paper is organized as follows:
 - **Section 1: Methods** - Describes implementation details and reviews relevant literature for different modules.
 - **Section 2: Experiments** - Analyzes and compares experiment results with visualization explanations and conducts an ablation study.
 - **Section 3: Conclusion** - Concludes the study and provides insightful suggestions for future works.
-```
